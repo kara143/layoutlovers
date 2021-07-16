@@ -1,0 +1,70 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+    <PropertyGroup Label="Globals">
+        <SccProjectName>SAK</SccProjectName>
+        <SccProvider>SAK</SccProvider>
+        <SccAuxPath>SAK</SccAuxPath>
+        <SccLocalPath>SAK</SccLocalPath>
+        <Configurations>Debug;Release;Staging</Configurations>
+        <!--Next settings are to avoid extra not needed files to be generated-->
+        <TypeScriptToolsVersion>4.1</TypeScriptToolsVersion>
+        <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
+        <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>
+        <PreserveCompilationContext>false</PreserveCompilationContext>
+        <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>
+        <RestorePackages>false</RestorePackages>
+        <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
+        <CopyOutputSymbolsToPublishDirectory>false</CopyOutputSymbolsToPublishDirectory>
+        <GenerateDependencyFile>false</GenerateDependencyFile>
+        <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
+    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+      <OutputType>Library</OutputType>
+      <DebugType>none</DebugType>
+      <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove=".ebextensions\**" />
+    <Compile Remove=".elasticbeanstalk\**" />
+    <Compile Remove="dist\**" />
+    <Compile Remove="external_libs\**" />
+    <Compile Remove="node_modules\**" />
+    <Compile Remove="src\assets\common\scripts\**" />
+    <Content Remove=".ebextensions\**" />
+    <Content Remove=".elasticbeanstalk\**" />
+    <EmbeddedResource Remove=".ebextensions\**" />
+    <EmbeddedResource Remove=".elasticbeanstalk\**" />
+    <EmbeddedResource Remove="dist\**" />
+    <EmbeddedResource Remove="external_libs\**" />
+    <EmbeddedResource Remove="node_modules\**" />
+    <EmbeddedResource Remove="src\assets\common\scripts\**" />
+    <None Remove=".ebextensions\**" />
+    <None Remove=".elasticbeanstalk\**" />
+    <None Remove="dist\**" />
+    <None Remove="external_libs\**" />
+    <None Remove="node_modules\**" />
+    <None Remove="src\assets\common\scripts\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove=".editorconfig" />
+    <None Remove=".gitignore" />
+    <None Remove="npm-shrinkwrap.json" />
+    <None Remove="yarn.lock" />
+  </ItemGroup>
+    <ItemGroup>
+        <!--Exclude all content and files and folders from publish, because we will manualy select them in Target Name="PrepublishScript"-->
+        <ExcludeFromPackageFiles Include="*.*" />
+        <!--TODO: remove TypeScriptCompile not needed-->
+        <Content Update="**" CopyToPublishDirectory="Never" />
+        <Content Update="*.*" CopyToPublishDirectory="Never" />
+    </ItemGroup>
+    <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish">
+        <!--Build dist folder first and then manually include into publish-->
+        <Exec Command="yarn run publish" Condition="'$(Configuration)' == 'Release'" />
+
+        <ItemGroup>
+            <_DistFiles Include="web.config;app.js;dist\**" Exclude="dist\assets\metronic\themes\theme*\**" />
+            <ContentWithTargetPath Include="@(_DistFiles)" TargetPath="%(RecursiveDir)%(FileName)%(Extension)" CopyToPublishDirectory="PreserveNewest" />
+        </ItemGroup>
+    </Target>
+</Project>
