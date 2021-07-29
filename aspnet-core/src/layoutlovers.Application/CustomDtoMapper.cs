@@ -48,6 +48,7 @@ namespace layoutlovers
     {
         public static void CreateMappings(IMapperConfigurationExpression configuration)
         {
+            //remove_test_branch
             //Inputs
             configuration.CreateMap<CheckboxInputType, FeatureInputTypeDto>();
             configuration.CreateMap<SingleLineStringInputType, FeatureInputTypeDto>();
