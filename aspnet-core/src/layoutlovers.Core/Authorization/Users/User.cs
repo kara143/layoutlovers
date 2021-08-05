@@ -4,6 +4,8 @@ using Abp.Auditing;
 using Abp.Authorization.Users;
 using Abp.Extensions;
 using Abp.Timing;
+using layoutlovers.Favorites;
+using layoutlovers.ShoppingCarts;
 
 namespace layoutlovers.Authorization.Users
 {
@@ -24,6 +26,8 @@ namespace layoutlovers.Authorization.Users
 
         public List<UserOrganizationUnit> OrganizationUnits { get; set; }
 
+        public virtual ICollection<Favorite> Favorites { get; set; }
+        public virtual ICollection<ShoppingCart> ShoppingCarts { get; set; }
         //Can add application specific user properties here
 
         public User()

@@ -19,6 +19,7 @@ using Microsoft.Extensions.Logging;
 using layoutlovers.Configuration;
 using layoutlovers.Identity;
 using layoutlovers.Web.HealthCheck;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace layoutlovers.Web.Public.Startup
 {
@@ -48,7 +49,7 @@ namespace layoutlovers.Web.Public.Startup
 
             IdentityRegistrar.Register(services);
             services.AddSignalR();
-
+            services.Configure<FormOptions>(options => options.MultipartBodyLengthLimit = long.MaxValue); // or other given limit
             if (bool.Parse(_appConfiguration["HealthChecks:HealthChecksEnabled"]))
             {
                 services.AddAbpZeroHealthCheck();

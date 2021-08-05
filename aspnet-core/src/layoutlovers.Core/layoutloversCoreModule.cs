@@ -110,9 +110,8 @@ namespace layoutlovers
 
             if (DebugHelper.IsDebug)
             {
-                //TODO: check
                 //Disabling email sending in debug mode
-                Configuration.ReplaceService<IEmailSender, NullEmailSender>(DependencyLifeStyle.Transient);
+                //Configuration.ReplaceService<IEmailSender, NullEmailSender>(DependencyLifeStyle.Transient);
             }
 
             Configuration.ReplaceService(typeof(IEmailSenderConfiguration), () =>

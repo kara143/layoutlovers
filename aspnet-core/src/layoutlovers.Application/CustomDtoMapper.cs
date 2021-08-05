@@ -12,6 +12,7 @@ using Abp.UI.Inputs;
 using Abp.Webhooks;
 using AutoMapper;
 using IdentityServer4.Extensions;
+using layoutlovers.Amazon;
 using layoutlovers.Auditing.Dto;
 using layoutlovers.Authorization.Accounts.Dto;
 using layoutlovers.Authorization.Delegation;
@@ -23,11 +24,16 @@ using layoutlovers.Authorization.Users.Delegation.Dto;
 using layoutlovers.Authorization.Users.Dto;
 using layoutlovers.Authorization.Users.Importing.Dto;
 using layoutlovers.Authorization.Users.Profile.Dto;
+using layoutlovers.Categories;
+using layoutlovers.Categories.Dto;
 using layoutlovers.Chat;
 using layoutlovers.Chat.Dto;
 using layoutlovers.DynamicEntityProperties.Dto;
 using layoutlovers.Editions;
 using layoutlovers.Editions.Dto;
+using layoutlovers.Files.Dto;
+using layoutlovers.FilterTags;
+using layoutlovers.FilterTags.Dto;
 using layoutlovers.Friendships;
 using layoutlovers.Friendships.Cache;
 using layoutlovers.Friendships.Dto;
@@ -39,6 +45,8 @@ using layoutlovers.MultiTenancy.Payments;
 using layoutlovers.MultiTenancy.Payments.Dto;
 using layoutlovers.Notifications.Dto;
 using layoutlovers.Organizations.Dto;
+using layoutlovers.Products;
+using layoutlovers.Products.Dto;
 using layoutlovers.Sessions.Dto;
 using layoutlovers.WebHooks.Dto;
 
@@ -76,8 +84,21 @@ namespace layoutlovers
             configuration.CreateMap<Role, RoleListDto>();
             configuration.CreateMap<UserRole, UserListRoleDto>();
 
-            
+            configuration.CreateMap<FilterTag, FilterTagDto>();
+            configuration.CreateMap<FilterTagDto, FilterTag>();
 
+            configuration.CreateMap<Category, CategoryDto>();
+
+            configuration.CreateMap<CreateProductDto, Product>();
+            configuration.CreateMap<Product, CreateProductDto>();
+            configuration.CreateMap<AmazonS3File, S3FileDtoBase>();
+
+            configuration.CreateMap<AmazonS3File, S3ImageDto>();
+            configuration.CreateMap<AmazonS3File, S3FileDto>();
+
+            configuration.CreateMap<Product, ProductDto>()
+                .ForMember(dto => dto.Category, opt => opt.MapFrom(ent => ent.Category))
+                .ForMember(dto => dto.AmazonS3Files, opt => opt.MapFrom(ent => ent.AmazonS3Files));
             //Edition
             configuration.CreateMap<EditionEditDto, SubscribableEdition>().ReverseMap();
             configuration.CreateMap<EditionCreateDto, SubscribableEdition>();
@@ -85,7 +106,7 @@ namespace layoutlovers
             configuration.CreateMap<SubscribableEdition, EditionInfoDto>();
 
             configuration.CreateMap<Edition, EditionInfoDto>().Include<SubscribableEdition, EditionInfoDto>();
-
+            
             configuration.CreateMap<SubscribableEdition, EditionListDto>();
             configuration.CreateMap<Edition, EditionEditDto>();
             configuration.CreateMap<Edition, SubscribableEdition>();

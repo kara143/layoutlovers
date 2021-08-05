@@ -1,11 +1,10 @@
-﻿using Abp.Authorization;
-using layoutlovers.Categories.Dto;
+﻿using layoutlovers.Categories.Dto;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace layoutlovers.Categories
 {
-    [AbpAuthorize]
+    //[AbpAuthorize]
     public class CategoriesAppService: layoutloversAppServiceBase, ICategoriesAppService
     {
         private readonly ICategoryManager _categoryManager;
