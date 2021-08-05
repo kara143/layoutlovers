@@ -18,7 +18,9 @@ namespace layoutlovers.Web.Startup
                 .UseKestrel(opt =>
                 {
                     opt.AddServerHeader = false;
-                    opt.Limits.MaxRequestLineSize = 16 * 1024;
+                    //opt.Limits.MaxRequestLineSize = 16 * 1024;
+                    opt.Limits.MaxRequestLineSize = int.MaxValue;
+                    opt.Limits.MaxRequestBodySize = long.MaxValue;
                 })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIIS()

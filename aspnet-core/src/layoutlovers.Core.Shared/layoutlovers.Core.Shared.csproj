@@ -7,5 +7,6 @@
   <ItemGroup>
     <PackageReference Include="Abp" Version="6.3.0" />
     <PackageReference Include="Abp.Zero.Common" Version="6.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.8" />
   </ItemGroup>
 </Project>

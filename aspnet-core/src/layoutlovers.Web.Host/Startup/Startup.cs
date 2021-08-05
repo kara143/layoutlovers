@@ -43,6 +43,7 @@ using Newtonsoft.Json.Serialization;
 using Owl.reCAPTCHA;
 using HealthChecksUISettings = HealthChecks.UI.Configuration.Settings;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace layoutlovers.Web.Startup
 {
@@ -68,6 +69,8 @@ namespace layoutlovers.Web.Startup
             }).AddNewtonsoftJson();
 
             services.AddSignalR();
+
+            services.Configure<FormOptions>(options => options.MultipartBodyLengthLimit = long.MaxValue);
 
             //Configure CORS for angular2 UI
             services.AddCors(options =>
@@ -307,6 +310,7 @@ namespace layoutlovers.Web.Startup
                             ServerCertificate = cert
                         });
                     });
+                options.Limits.MaxRequestBodySize = null;
             });
         }
     }

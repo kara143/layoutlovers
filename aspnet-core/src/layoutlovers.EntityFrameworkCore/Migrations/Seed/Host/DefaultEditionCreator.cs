@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using layoutlovers.Editions;
 using layoutlovers.EntityFrameworkCore;
 using layoutlovers.Features;
+using System.Collections.Generic;
 
 namespace layoutlovers.Migrations.Seed.Host
 {
@@ -23,22 +24,68 @@ namespace layoutlovers.Migrations.Seed.Host
 
         private void CreateEditions()
         {
-            var defaultEdition = _context.Editions.IgnoreQueryFilters().FirstOrDefault(e => e.Name == EditionManager.DefaultEditionName);
-            if (defaultEdition == null)
+            var defaultEditions = _context.Editions.IgnoreQueryFilters().ToList();
+            //.FirstOrDefault(e => e.Name == EditionManager.DefaultEditionName);
+            if (defaultEditions.Count == 0)
             {
-                defaultEdition = new SubscribableEdition { Name = EditionManager.DefaultEditionName, DisplayName = EditionManager.DefaultEditionName };
-                _context.Editions.Add(defaultEdition);
+                defaultEditions.Add(new SubscribableEdition 
+                {
+                    Name = EditionManager.DefaultEditionName,
+                    DisplayName = EditionManager.DefaultEditionName 
+                });
+
+                defaultEditions.Add( new SubscribableEdition
+                {
+                    Name = "Basic",
+                    DisplayName = "Basic",
+                    MonthlyPrice = 50,
+                    TrialDayCount = 0,
+                    WaitingDayAfterExpire = 0,
+                    AnnualPrice = 0,
+                    DailyPrice = 0,
+                    WeeklyPrice = 0
+                });
+
+                defaultEditions.Add(new SubscribableEdition
+                {
+                    Name = "Premium",
+                    DisplayName = "Premium",
+                    MonthlyPrice = 100,
+                    TrialDayCount = 0,
+                    WaitingDayAfterExpire = 0,
+                    AnnualPrice = 0,
+                    DailyPrice = 0,
+                    WeeklyPrice = 0
+                });
+
+                defaultEditions.Add(new SubscribableEdition
+                {
+                    Name = "Premium Plus",
+                    DisplayName = "Premium Plus",
+                    MonthlyPrice = 1000,
+                    TrialDayCount = 0,
+                    WaitingDayAfterExpire = 0,
+                    AnnualPrice = 0,
+                    DailyPrice = 0,
+                    WeeklyPrice = 0
+                });
+
+                _context.Editions.AddRange(defaultEditions);
                 _context.SaveChanges();
 
                 /* Add desired features to the standard edition, if wanted... */
             }
 
-            if (defaultEdition.Id > 0)
+            foreach (var defaultEdition in defaultEditions)
             {
-                CreateFeatureIfNotExists(defaultEdition.Id, AppFeatures.ChatFeature, true);
-                CreateFeatureIfNotExists(defaultEdition.Id, AppFeatures.TenantToTenantChatFeature, true);
-                CreateFeatureIfNotExists(defaultEdition.Id, AppFeatures.TenantToHostChatFeature, true);
+                if (defaultEdition.Id > 0)
+                {
+                    CreateFeatureIfNotExists(defaultEdition.Id, AppFeatures.ChatFeature, true);
+                    CreateFeatureIfNotExists(defaultEdition.Id, AppFeatures.TenantToTenantChatFeature, true);
+                    CreateFeatureIfNotExists(defaultEdition.Id, AppFeatures.TenantToHostChatFeature, true);
+                }
             }
+           
         }
 
         private void CreateFeatureIfNotExists(int editionId, string featureName, bool isEnabled)

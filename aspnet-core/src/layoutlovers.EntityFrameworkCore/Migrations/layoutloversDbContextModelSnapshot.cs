@@ -1387,6 +1387,52 @@ namespace layoutlovers.Migrations
                     b.ToTable("AbpWebhookSubscriptions");
                 });
 
+            modelBuilder.Entity("layoutlovers.Amazon.AmazonS3File", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("CreatorUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("DeleterUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("FileExtension")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsImage")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("LastModifierUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("AppAmazonS3File");
+                });
+
             modelBuilder.Entity("layoutlovers.Authorization.Delegation.UserDelegation", b =>
                 {
                     b.Property<long>("Id")
@@ -1738,6 +1784,83 @@ namespace layoutlovers.Migrations
                     b.ToTable("AppChatMessages");
                 });
 
+            modelBuilder.Entity("layoutlovers.Favorites.Favorite", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("CreatorUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("DeleterUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("LastModifierUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AppFavorites");
+                });
+
+            modelBuilder.Entity("layoutlovers.FilterTags.FilterTag", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("CreatorUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("DeleterUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("LastModifierUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AppFilterTags");
+                });
+
             modelBuilder.Entity("layoutlovers.Friendships.Friendship", b =>
                 {
                     b.Property<long>("Id")
@@ -2009,6 +2132,48 @@ namespace layoutlovers.Migrations
                     b.ToTable("AbpTenants");
                 });
 
+            modelBuilder.Entity("layoutlovers.ProductFilterTags.ProductFilterTag", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("CreatorUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("DeleterUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("FilterTagId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("LastModifierUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FilterTagId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("AppProductFilterTags");
+                });
+
             modelBuilder.Entity("layoutlovers.Products.Product", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2036,9 +2201,6 @@ namespace layoutlovers.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("DownloadUrl")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -2051,11 +2213,56 @@ namespace layoutlovers.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("ProductType")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
 
                     b.ToTable("AppProducts");
+                });
+
+            modelBuilder.Entity("layoutlovers.ShoppingCarts.ShoppingCart", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("CreatorUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("DeleterUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("LastModifierUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AppShoppingCarts");
                 });
 
             modelBuilder.Entity("layoutlovers.Storage.BinaryObject", b =>
@@ -2296,6 +2503,17 @@ namespace layoutlovers.Migrations
                     b.Navigation("WebhookEvent");
                 });
 
+            modelBuilder.Entity("layoutlovers.Amazon.AmazonS3File", b =>
+                {
+                    b.HasOne("layoutlovers.Products.Product", "Product")
+                        .WithMany("AmazonS3Files")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("layoutlovers.Authorization.Roles.Role", b =>
                 {
                     b.HasOne("layoutlovers.Authorization.Users.User", "CreatorUser")
@@ -2338,6 +2556,25 @@ namespace layoutlovers.Migrations
                     b.Navigation("LastModifierUser");
                 });
 
+            modelBuilder.Entity("layoutlovers.Favorites.Favorite", b =>
+                {
+                    b.HasOne("layoutlovers.Products.Product", "Product")
+                        .WithMany("Favorites")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("layoutlovers.Authorization.Users.User", "User")
+                        .WithMany("Favorites")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("layoutlovers.MultiTenancy.Payments.SubscriptionPayment", b =>
                 {
                     b.HasOne("Abp.Application.Editions.Edition", "Edition")
@@ -2376,6 +2613,25 @@ namespace layoutlovers.Migrations
                     b.Navigation("LastModifierUser");
                 });
 
+            modelBuilder.Entity("layoutlovers.ProductFilterTags.ProductFilterTag", b =>
+                {
+                    b.HasOne("layoutlovers.FilterTags.FilterTag", "FilterTag")
+                        .WithMany("ProductFilterTags")
+                        .HasForeignKey("FilterTagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("layoutlovers.Products.Product", "Product")
+                        .WithMany("ProductFilterTags")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FilterTag");
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("layoutlovers.Products.Product", b =>
                 {
                     b.HasOne("layoutlovers.Categories.Category", "Category")
@@ -2385,6 +2641,25 @@ namespace layoutlovers.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("layoutlovers.ShoppingCarts.ShoppingCart", b =>
+                {
+                    b.HasOne("layoutlovers.Products.Product", "Product")
+                        .WithMany("ShoppingCarts")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("layoutlovers.Authorization.Users.User", "User")
+                        .WithMany("ShoppingCarts")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Abp.Application.Features.EditionFeatureSetting", b =>
@@ -2447,6 +2722,8 @@ namespace layoutlovers.Migrations
                 {
                     b.Navigation("Claims");
 
+                    b.Navigation("Favorites");
+
                     b.Navigation("Logins");
 
                     b.Navigation("OrganizationUnits");
@@ -2457,12 +2734,30 @@ namespace layoutlovers.Migrations
 
                     b.Navigation("Settings");
 
+                    b.Navigation("ShoppingCarts");
+
                     b.Navigation("Tokens");
                 });
 
             modelBuilder.Entity("layoutlovers.Categories.Category", b =>
                 {
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("layoutlovers.FilterTags.FilterTag", b =>
+                {
+                    b.Navigation("ProductFilterTags");
+                });
+
+            modelBuilder.Entity("layoutlovers.Products.Product", b =>
+                {
+                    b.Navigation("AmazonS3Files");
+
+                    b.Navigation("Favorites");
+
+                    b.Navigation("ProductFilterTags");
+
+                    b.Navigation("ShoppingCarts");
                 });
 #pragma warning restore 612, 618
         }

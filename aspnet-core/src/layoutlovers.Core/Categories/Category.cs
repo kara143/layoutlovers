@@ -7,9 +7,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace layoutlovers.Categories
 {
     [Table("AppCategories")]
-    public class Category: FullAuditedEntity<Guid>
+    public class Category: FullAuditedEntityWithName<Guid>, ICategory
     {
-        public string Name { get; set; }
         public virtual ICollection<Product> Products { set; get; }
     }
 }
