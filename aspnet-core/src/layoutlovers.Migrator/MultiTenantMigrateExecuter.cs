@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Abp.Data;
 using Abp.Dependency;
 using Abp.Domain.Repositories;
@@ -8,7 +7,6 @@ using Abp.Domain.Uow;
 using Abp.Extensions;
 using Abp.MultiTenancy;
 using Abp.Runtime.Security;
-using Microsoft.Extensions.Configuration;
 using layoutlovers.EntityFrameworkCore;
 using layoutlovers.Migrations.Seed;
 using layoutlovers.MultiTenancy;

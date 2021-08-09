@@ -11,6 +11,7 @@ using layoutlovers.FilterTags;
 using layoutlovers.ProductFilterTags;
 using Abp.Collections.Extensions;
 using layoutlovers.Extensions;
+using layoutlovers.Amazon;
 
 namespace layoutlovers.Products
 {
@@ -19,13 +20,16 @@ namespace layoutlovers.Products
         private readonly IProductManager _productManager;
         private readonly IFilterTagManager _filterTagManager;
         private readonly IProductFilterTagManager _productFilterTagManager;
+        private readonly IAmazonS3Manager _amazonS3Manager;
         public ProductsAppService(IProductManager productManager
             , IFilterTagManager filterTagManager
-            , IProductFilterTagManager productFilterTagManager)
+            , IProductFilterTagManager productFilterTagManager
+            , IAmazonS3Manager amazonS3Manager)
         {
             _productFilterTagManager = productFilterTagManager;
             _filterTagManager = filterTagManager;
             _productManager = productManager;
+            _amazonS3Manager = amazonS3Manager;
         }
 
         public async Task<ProductDto> Create(CreateProductDto input)
@@ -143,6 +147,13 @@ namespace layoutlovers.Products
             return productDto;
         }
 
+        public async Task Delete(Guid id)
+        {
+            await _amazonS3Manager.DleteAllByProductId(id);
+
+            await _productManager.DeleteAsync(id);
+        }
+
         public async Task<PagedResultDto<ProductDto>> GetProducts(GetProductsInput input)
         {
             var query = _productManager.GetAll();
@@ -166,7 +177,7 @@ namespace layoutlovers.Products
         private IQueryable<Product> Filtering(GetProductsInput input, IQueryable<Product> products)
         {
             var filter = input.Filter?.ToLower();
-            
+
             var filterTagDtos = input.FilterTagIds.Distinct().ToList();
 
             var productsTest = products
