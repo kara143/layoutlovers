@@ -3,10 +3,10 @@ using Abp.Events.Bus;
 using Abp.Modules;
 using Abp.Reflection.Extensions;
 using Castle.MicroKernel.Registration;
-using Microsoft.Extensions.Configuration;
 using layoutlovers.Configuration;
 using layoutlovers.EntityFrameworkCore;
 using layoutlovers.Migrator.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 
 namespace layoutlovers.Migrator
 {

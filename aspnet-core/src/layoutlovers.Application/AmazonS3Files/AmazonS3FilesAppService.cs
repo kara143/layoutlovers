@@ -70,8 +70,7 @@ namespace layoutlovers.AmazonS3Files
 
             return dtos;
         }
-
-        [HttpPost]
+        
         public async Task Delete(Guid id)
         {
             await _amazonS3Manager.DeleteFromS3AndDbById(id);

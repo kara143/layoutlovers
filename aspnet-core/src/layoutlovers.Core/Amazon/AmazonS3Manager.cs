@@ -78,12 +78,24 @@ namespace layoutlovers.Amazon
 
         }
         #endregion
-
         public async Task DeleteFromS3AndDbById(Guid id)
         {
             var file = await _repository.GetAsync(id);
             await DeleteFromS3(file);
             await DeleteAsync(file.Id);
+        }
+
+        public async Task DleteAllByProductId(Guid id)
+        {
+            var fileIds = _repository.GetAll()
+                .Where(f => f.ProductId == id)
+                .Select(f => f.Id)
+                .ToList();
+
+            foreach (var fileId in fileIds)
+            {
+                await DeleteFromS3AndDbById(fileId);
+            }
         }
 
         public async Task<AmazonS3File> UploadToS3AndInsert(IFormFile file, Guid productId)

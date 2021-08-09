@@ -13,5 +13,6 @@ namespace layoutlovers.Amazon
         Task DeleteFromS3AndDbById(Guid id);
         IEnumerable<IAmazonS3File> GetAllByProductId(Guid id);
         Task<IAmazonS3File> GetById(Guid id);
+        Task DleteAllByProductId(Guid id);
     }
 }
