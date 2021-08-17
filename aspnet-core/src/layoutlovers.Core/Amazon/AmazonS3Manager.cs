@@ -4,7 +4,7 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using layoutlovers.Files;
-using layoutlovers.Products;
+using layoutlovers.LayoutProducts;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -18,10 +18,10 @@ namespace layoutlovers.Amazon
     {
         private readonly AmazonS3Client _client;
         private readonly AmazonS3Configuration _amazonS3Configuration;
-        private readonly IRepository<Product, Guid> _product;
+        private readonly IRepository<LayoutProduct, Guid> _product;
         public AmazonS3Manager(IRepository<AmazonS3File, Guid> repository
             , AmazonS3Configuration amazonS3Configuration
-            , IRepository<Product, Guid> product) : base(repository)
+            , IRepository<LayoutProduct, Guid> product) : base(repository)
         {
             _amazonS3Configuration = amazonS3Configuration;
             _client = new AmazonS3Client(_amazonS3Configuration.AwsAccessKeyId
@@ -35,7 +35,7 @@ namespace layoutlovers.Amazon
         {
             try
             {
-                string buckentName = GetBucketName(file.IsImage, file.ProductId.ToString());
+                string buckentName = GetBucketName(file.IsImage, file.LayoutProductId.ToString());
 
                 var deleteObjectRequest = new DeleteObjectRequest
                 {
@@ -47,7 +47,7 @@ namespace layoutlovers.Amazon
             }
             catch (Exception)
             {
-                throw new Exception($"An error occurred while deleting a file from the product with ID: {file.ProductId} and file key: {file.Name} ABS");
+                throw new Exception($"An error occurred while deleting a file from the product with ID: {file.LayoutProductId} and file key: {file.Name} ABS");
             }
         }
         public async Task UploadToS3(IFormFile file, string productId)
@@ -88,7 +88,7 @@ namespace layoutlovers.Amazon
         public async Task DleteAllByProductId(Guid id)
         {
             var fileIds = _repository.GetAll()
-                .Where(f => f.ProductId == id)
+                .Where(f => f.LayoutProductId == id)
                 .Select(f => f.Id)
                 .ToList();
 
@@ -122,7 +122,7 @@ namespace layoutlovers.Amazon
 
         public IEnumerable<IAmazonS3File> GetAllByProductId(Guid id)
         {
-            return _repository.GetAll().Where(f => f.ProductId == id).ToArray();
+            return _repository.GetAll().Where(f => f.LayoutProductId == id).ToArray();
         }
 
         public async Task<IAmazonS3File> GetById(Guid id)
@@ -136,7 +136,7 @@ namespace layoutlovers.Amazon
             {
                 Name = file.FileName,
                 FileExtension = file.GetFileType(),
-                ProductId = productId,
+                LayoutProductId = productId,
                 IsImage = file.HasImage()
             };
             return await InsertAndGetEntityAsync(amazonS3File);

@@ -2,7 +2,7 @@
 
 namespace layoutlovers.Favorites
 {
-    public interface IFavoriteManager : IAppManagerBase<Favorite, Guid>
+    public interface IFavoriteManager: IAppManagerBase<Favorite, Guid>
     {
     }
 }

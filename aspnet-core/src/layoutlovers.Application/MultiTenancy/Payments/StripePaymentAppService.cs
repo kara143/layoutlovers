@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using Abp.Application.Services;
 using Abp.UI;
-using layoutlovers.Authorization.Users;
 using layoutlovers.Editions;
+using layoutlovers.MultiTenancy.Accounting.Dto;
 using layoutlovers.MultiTenancy.Payments.Dto;
 using layoutlovers.MultiTenancy.Payments.Stripe;
 using layoutlovers.MultiTenancy.Payments.Stripe.Dto;
@@ -20,7 +21,7 @@ namespace layoutlovers.MultiTenancy.Payments
         private readonly IPaymentAppService _paymentAppService;
         private readonly StripeGatewayManager _stripeGatewayManager;
         private readonly StripePaymentGatewayConfiguration _stripePaymentGatewayConfiguration;
-
+       
         public StripePaymentAppService(
             StripeGatewayManager stripeGatewayManager,
             StripePaymentGatewayConfiguration stripePaymentGatewayConfiguration,
@@ -79,14 +80,14 @@ namespace layoutlovers.MultiTenancy.Payments
             }
 
             payment.SetAsPaid();
-            
+
             var tenant = await TenantManager.GetByIdAsync(payment.TenantId);
             if (tenant != null && payment.IsRecurring)
             {
                 tenant.SubscriptionPaymentType = SubscriptionPaymentType.RecurringAutomatic;
                 await TenantManager.UpdateAsync(tenant);
             }
-            
+
             await CurrentUnitOfWork.SaveChangesAsync();
 
             if (payment.IsProrationPayment())
@@ -140,7 +141,7 @@ namespace layoutlovers.MultiTenancy.Payments
                 StripeGatewayManager.StripeSessionIdSubscriptionPaymentExtensionDataKey,
                 input.StripeSessionId
             );
-            
+
             if (!paymentId.HasValue)
             {
                 throw new ApplicationException($"Cannot find any payment with sessionId {input.StripeSessionId}");
@@ -163,7 +164,7 @@ namespace layoutlovers.MultiTenancy.Payments
                              "sessionId={CHECKOUT_SESSION_ID}",
                 CancelUrl = input.CancelUrl
             };
-            
+
             if (payment.IsRecurring && !payment.IsProrationPayment())
             {
                 var plan = await _stripeGatewayManager.GetOrCreatePlanForPayment(input.PaymentId);
@@ -222,7 +223,7 @@ namespace layoutlovers.MultiTenancy.Payments
                 var tenant = await TenantManager.GetByIdAsync(payment.TenantId);
                 await _stripeGatewayManager.UpdateCustomerDescriptionAsync(sessionId, tenant.TenancyName);
             }
-            
+
             if (payment.Status == SubscriptionPaymentStatus.Completed)
             {
                 return new StripePaymentResultOutput
@@ -235,6 +236,64 @@ namespace layoutlovers.MultiTenancy.Payments
             {
                 PaymentDone = false
             };
+        }
+
+        public Charge MakePayment(PaymentCardDto card)
+        {
+            var paymentCard = ObjectMapper.Map<TokenCardOptions>(card);
+            var transaction = new TransactionDto
+            {
+                Currency = card.Currency,
+                Amount = card.Amount,
+                Email = card.Email
+            };
+
+            try
+            {
+                var charge = MakeCharge(paymentCard, transaction);
+                return charge;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Problem with payment on this card: {card.Number}. {ex.Message}", ex);
+            }
+        }
+
+        private Charge MakeCharge(TokenCardOptions card, TransactionDto transaction)
+        {
+            StripeConfiguration.ApiKey = _stripePaymentGatewayConfiguration.SecretKey;
+
+            //Assign Card to Token Object and create Token  
+            var tokenOptions = new TokenCreateOptions { Card = card };
+            var serviceToken = new TokenService();
+            var token = serviceToken.Create(tokenOptions);
+
+            //Create Customer Object and Register it on Stripe  
+            var userId = Guid.NewGuid().ToString();
+            var customer = new CustomerCreateOptions { Email = transaction.Email, Source = token.Id };
+            var customerService = new CustomerService();
+            var stripeCustomer = customerService.Create(customer);
+
+            //Create Charge Object with details of Charge  
+            var options = new ChargeCreateOptions
+            {
+                Amount = (int)(transaction.Amount * 100),  // important to multiple before casting to prevent rounding
+                Currency = transaction.Currency,
+                ReceiptEmail = transaction.Email,
+                Customer = stripeCustomer.Id,
+                Description = Convert.ToString(DateTime.Now.ToBinary()), //Optional  
+            };
+
+            //and Create Method of this object is doing the payment execution.  
+            var service = new ChargeService();
+            var charge = service.Create(options); // This will do the Payment
+
+            var transactionAmount = transaction.Amount.ToString(CultureInfo.InvariantCulture);
+
+            Logger.Info($"Charge made successfully on behalf of {userId} for {transaction.Currency}{transactionAmount}. " +
+                                   $"Status: {charge.Status} " +
+                                   $"Receipt Url: {charge.ReceiptUrl}");
+            return charge;
         }
     }
 }

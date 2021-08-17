@@ -1,5 +1,6 @@
 {
-  "remoteServiceBaseUrl": "https://localhost:44301",
+  "_remoteServiceBaseUrl": "https://localhost:44301",
+  "remoteServiceBaseUrl": "https://layoutlovers.com",
   "appBaseUrl": "http://localhost:4200",
   "localeMappings": {
     "angular": [

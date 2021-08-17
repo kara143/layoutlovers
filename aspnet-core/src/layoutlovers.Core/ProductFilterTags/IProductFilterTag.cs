@@ -4,7 +4,7 @@ namespace layoutlovers.ProductFilterTags
 {
     public interface IProductFilterTag
     {
-        Guid ProductId { get; set; }
+        Guid LayoutProductId { get; set; }
         Guid FilterTagId { get; set; }
     }
 }

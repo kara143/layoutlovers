@@ -25,6 +25,13 @@ namespace layoutlovers
             return _repository.Get(entityId);
         }
 
+        public async Task<TEntity> InsertAsync(TEntity entity)
+        {
+            var result = await _repository.InsertAsync(entity);
+            await CurrentUnitOfWork.SaveChangesAsync();
+            return result;
+        }
+
         public async Task<TEntity> InsertOrUpdateAndGetEntityAsync(TEntity entity)
         {
             var entityId = await _repository.InsertOrUpdateAndGetIdAsync(entity);

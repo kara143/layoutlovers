@@ -5,6 +5,8 @@ using layoutlovers.Editions;
 using layoutlovers.EntityFrameworkCore;
 using layoutlovers.Features;
 using System.Collections.Generic;
+using layoutlovers.DownloadRestrictions;
+using layoutlovers.LayoutProducts;
 
 namespace layoutlovers.Migrations.Seed.Host
 {
@@ -31,7 +33,13 @@ namespace layoutlovers.Migrations.Seed.Host
                 defaultEditions.Add(new SubscribableEdition 
                 {
                     Name = EditionManager.DefaultEditionName,
-                    DisplayName = EditionManager.DefaultEditionName 
+                    DisplayName = EditionManager.DefaultEditionName,
+                    DownloadRestrictions = new List<DownloadRestriction> {
+                    new DownloadRestriction
+                    {
+                        DownloadPerDay = int.MaxValue,
+                        LayoutProductType = LayoutProductType.Free
+                    }}
                 });
 
                 defaultEditions.Add( new SubscribableEdition
@@ -43,7 +51,18 @@ namespace layoutlovers.Migrations.Seed.Host
                     WaitingDayAfterExpire = 0,
                     AnnualPrice = 0,
                     DailyPrice = 0,
-                    WeeklyPrice = 0
+                    WeeklyPrice = 0,
+                    DownloadRestrictions = new List<DownloadRestriction> { 
+                    new DownloadRestriction
+                    {
+                        DownloadPerDay = int.MaxValue,
+                        LayoutProductType = LayoutProductType.Free
+                    },
+                    new DownloadRestriction
+                    {
+                        DownloadPerDay = 5,
+                        LayoutProductType = LayoutProductType.Basic
+                    }}
                 });
 
                 defaultEditions.Add(new SubscribableEdition
@@ -55,7 +74,23 @@ namespace layoutlovers.Migrations.Seed.Host
                     WaitingDayAfterExpire = 0,
                     AnnualPrice = 0,
                     DailyPrice = 0,
-                    WeeklyPrice = 0
+                    WeeklyPrice = 0,
+                    DownloadRestrictions = new List<DownloadRestriction> {
+                    new DownloadRestriction
+                    {
+                        DownloadPerDay = int.MaxValue,
+                        LayoutProductType = LayoutProductType.Free
+                    },
+                    new DownloadRestriction
+                    {
+                        DownloadPerDay = 10,
+                        LayoutProductType = LayoutProductType.Basic
+                    },
+                    new DownloadRestriction
+                    {
+                        DownloadPerDay = 10,
+                        LayoutProductType = LayoutProductType.Premium
+                    }}
                 });
 
                 defaultEditions.Add(new SubscribableEdition
@@ -67,7 +102,23 @@ namespace layoutlovers.Migrations.Seed.Host
                     WaitingDayAfterExpire = 0,
                     AnnualPrice = 0,
                     DailyPrice = 0,
-                    WeeklyPrice = 0
+                    WeeklyPrice = 0,
+                    DownloadRestrictions = new List<DownloadRestriction> {
+                    new DownloadRestriction
+                    {
+                        DownloadPerDay = int.MaxValue,
+                        LayoutProductType = LayoutProductType.Free
+                    },
+                    new DownloadRestriction
+                    {
+                        DownloadPerDay = int.MaxValue,
+                        LayoutProductType = LayoutProductType.Basic
+                    },
+                    new DownloadRestriction
+                    {
+                        DownloadPerDay = int.MaxValue,
+                        LayoutProductType = LayoutProductType.Premium
+                    }}
                 });
 
                 _context.Editions.AddRange(defaultEditions);

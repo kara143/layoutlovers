@@ -8,7 +8,7 @@ namespace layoutlovers.Files.Dto
     {
         public string Name { get; set; }
         public FileType FileExtension { get; set; }
-        public Guid ProductId { get; set; }
+        public Guid LayoutProductId { get; set; }
         public bool IsImage { get; set; }
     }
 }

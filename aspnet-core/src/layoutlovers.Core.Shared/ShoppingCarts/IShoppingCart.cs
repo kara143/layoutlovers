@@ -1,10 +1,6 @@
-﻿using System;
-
-namespace layoutlovers.ShoppingCarts
+﻿namespace layoutlovers.ShoppingCarts
 {
-    public interface IShoppingCart
+    public interface IShoppingCart: IUserProductBase
     {
-        Guid ProductId { get; set; }
-        long UserId { get; set; }
     }
 }

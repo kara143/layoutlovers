@@ -1,10 +1,6 @@
-﻿using System;
-
-namespace layoutlovers.UserProducts
+﻿namespace layoutlovers.UserProducts
 {
-    public interface IFavorite
+    public interface IFavorite: IUserProductBase
     {
-        Guid ProductId { get; set; }
-        long UserId { get; set; }
     }
 }
