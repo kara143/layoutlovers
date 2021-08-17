@@ -4,7 +4,7 @@ namespace layoutlovers.ShoppingCarts.Dto.Base
 {
     public class ShoppingCartBase : IShoppingCart
     {
-        public Guid ProductId { get; set; }
+        public Guid LayoutProductId { get; set; }
         public long UserId { get; set; }
     }
 }

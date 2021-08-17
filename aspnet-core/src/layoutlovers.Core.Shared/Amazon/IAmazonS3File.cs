@@ -7,6 +7,6 @@ namespace layoutlovers.Amazon
     {
         FileType FileExtension { get; set; }
         bool IsImage { get; set; }
-        Guid ProductId { get; set; }
+        Guid LayoutProductId { get; set; }
     }
 }

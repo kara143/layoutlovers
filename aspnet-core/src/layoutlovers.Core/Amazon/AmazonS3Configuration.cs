@@ -10,6 +10,8 @@ namespace layoutlovers.Amazon
         public string AwsAccessKeyId => _appConfiguration["Aws:S3:AwsAccessKeyId"];
         public string AwsSecretAccessKey => _appConfiguration["Aws:S3:AwsSecretAccessKey"];
         public string Region => _appConfiguration["Aws:S3:Region"];
+        public string ThumbnailImages => "https://{0}.s3.{1}.amazonaws.com/{2}/Thumbnail images/{3}";
+        public string FileTypes => "https://{0}.s3.{1}.amazonaws.com/{2}/File types/{3}";
         public AmazonS3Configuration(IAppConfigurationAccessor configurationAccessor)
         {
             _appConfiguration = configurationAccessor.Configuration;

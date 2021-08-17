@@ -15,7 +15,7 @@ namespace layoutlovers.ProductFilterTags
         public IEnumerable<FilterTag> GetFilterTagByProductId(Guid productId)
         {
             return _repository.GetAllIncluding(f => f.FilterTag)
-                .Where(f => f.ProductId == productId)
+                .Where(f => f.LayoutProductId == productId)
                 .Select(f => f.FilterTag)
                 .ToArray();
         }

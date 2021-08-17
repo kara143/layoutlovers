@@ -1420,15 +1420,15 @@ namespace layoutlovers.Migrations
                     b.Property<long?>("LastModifierUserId")
                         .HasColumnType("bigint");
 
+                    b.Property<Guid>("LayoutProductId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("LayoutProductId");
 
                     b.ToTable("AppAmazonS3File");
                 });
@@ -1585,6 +1585,9 @@ namespace layoutlovers.Migrations
 
                     b.Property<DateTime?>("DeletionTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("DownloadToday")
+                        .HasColumnType("int");
 
                     b.Property<string>("EmailAddress")
                         .IsRequired()
@@ -1784,6 +1787,91 @@ namespace layoutlovers.Migrations
                     b.ToTable("AppChatMessages");
                 });
 
+            modelBuilder.Entity("layoutlovers.DownloadAmazonS3Files.DownloadAmazonS3File", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AmazonS3FileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("CreatorUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("DeleterUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("LastModifierUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AmazonS3FileId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AppDownloadAmazonS3File");
+                });
+
+            modelBuilder.Entity("layoutlovers.DownloadRestrictions.DownloadRestriction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("CreatorUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("DeleterUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DownloadPerDay")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("LastModifierUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("LayoutProductType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SubscribableEditionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SubscribableEditionId");
+
+                    b.ToTable("AppDownloadRestrictions");
+                });
+
             modelBuilder.Entity("layoutlovers.Favorites.Favorite", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1811,7 +1899,7 @@ namespace layoutlovers.Migrations
                     b.Property<long?>("LastModifierUserId")
                         .HasColumnType("bigint");
 
-                    b.Property<Guid>("ProductId")
+                    b.Property<Guid>("LayoutProductId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<long>("UserId")
@@ -1819,7 +1907,7 @@ namespace layoutlovers.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("LayoutProductId");
 
                     b.HasIndex("UserId");
 
@@ -1908,6 +1996,55 @@ namespace layoutlovers.Migrations
                     b.HasIndex("TenantId", "UserId");
 
                     b.ToTable("AppFriendships");
+                });
+
+            modelBuilder.Entity("layoutlovers.LayoutProducts.LayoutProduct", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("CreatorUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("DeleterUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("LastModifierUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("LayoutProductType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("AppLayoutProducts");
                 });
 
             modelBuilder.Entity("layoutlovers.MultiTenancy.Accounting.Invoice", b =>
@@ -2162,29 +2299,26 @@ namespace layoutlovers.Migrations
                     b.Property<long?>("LastModifierUserId")
                         .HasColumnType("bigint");
 
-                    b.Property<Guid>("ProductId")
+                    b.Property<Guid>("LayoutProductId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
                     b.HasIndex("FilterTagId");
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("LayoutProductId");
 
                     b.ToTable("AppProductFilterTags");
                 });
 
-            modelBuilder.Entity("layoutlovers.Products.Product", b =>
+            modelBuilder.Entity("layoutlovers.Purchases.Purchase", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<Guid>("CategoryId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("ChargeId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreationTime")
                         .HasColumnType("datetime2");
@@ -2198,7 +2332,7 @@ namespace layoutlovers.Migrations
                     b.Property<DateTime?>("DeletionTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Description")
+                    b.Property<string>("FailureMessage")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDeleted")
@@ -2210,17 +2344,28 @@ namespace layoutlovers.Migrations
                     b.Property<long?>("LastModifierUserId")
                         .HasColumnType("bigint");
 
-                    b.Property<string>("Name")
+                    b.Property<Guid>("LayoutProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ReceiptUrl")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ProductType")
+                    b.Property<int>("RequestPayerStatus")
                         .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
+                    b.HasIndex("LayoutProductId");
 
-                    b.ToTable("AppProducts");
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AppPurchase");
                 });
 
             modelBuilder.Entity("layoutlovers.ShoppingCarts.ShoppingCart", b =>
@@ -2250,7 +2395,7 @@ namespace layoutlovers.Migrations
                     b.Property<long?>("LastModifierUserId")
                         .HasColumnType("bigint");
 
-                    b.Property<Guid>("ProductId")
+                    b.Property<Guid>("LayoutProductId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<long>("UserId")
@@ -2258,7 +2403,7 @@ namespace layoutlovers.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("LayoutProductId");
 
                     b.HasIndex("UserId");
 
@@ -2505,13 +2650,13 @@ namespace layoutlovers.Migrations
 
             modelBuilder.Entity("layoutlovers.Amazon.AmazonS3File", b =>
                 {
-                    b.HasOne("layoutlovers.Products.Product", "Product")
+                    b.HasOne("layoutlovers.LayoutProducts.LayoutProduct", "LayoutProduct")
                         .WithMany("AmazonS3Files")
-                        .HasForeignKey("ProductId")
+                        .HasForeignKey("LayoutProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Product");
+                    b.Navigation("LayoutProduct");
                 });
 
             modelBuilder.Entity("layoutlovers.Authorization.Roles.Role", b =>
@@ -2556,11 +2701,41 @@ namespace layoutlovers.Migrations
                     b.Navigation("LastModifierUser");
                 });
 
+            modelBuilder.Entity("layoutlovers.DownloadAmazonS3Files.DownloadAmazonS3File", b =>
+                {
+                    b.HasOne("layoutlovers.Amazon.AmazonS3File", "AmazonS3File")
+                        .WithMany("DownloadAmazonS3Files")
+                        .HasForeignKey("AmazonS3FileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("layoutlovers.Authorization.Users.User", "User")
+                        .WithMany("DownloadAmazonS3Files")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AmazonS3File");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("layoutlovers.DownloadRestrictions.DownloadRestriction", b =>
+                {
+                    b.HasOne("layoutlovers.Editions.SubscribableEdition", "SubscribableEdition")
+                        .WithMany("DownloadRestrictions")
+                        .HasForeignKey("SubscribableEditionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SubscribableEdition");
+                });
+
             modelBuilder.Entity("layoutlovers.Favorites.Favorite", b =>
                 {
-                    b.HasOne("layoutlovers.Products.Product", "Product")
+                    b.HasOne("layoutlovers.LayoutProducts.LayoutProduct", "LayoutProduct")
                         .WithMany("Favorites")
-                        .HasForeignKey("ProductId")
+                        .HasForeignKey("LayoutProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -2570,9 +2745,20 @@ namespace layoutlovers.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Product");
+                    b.Navigation("LayoutProduct");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("layoutlovers.LayoutProducts.LayoutProduct", b =>
+                {
+                    b.HasOne("layoutlovers.Categories.Category", "Category")
+                        .WithMany("Products")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("layoutlovers.MultiTenancy.Payments.SubscriptionPayment", b =>
@@ -2621,33 +2807,41 @@ namespace layoutlovers.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("layoutlovers.Products.Product", "Product")
+                    b.HasOne("layoutlovers.LayoutProducts.LayoutProduct", "LayoutProduct")
                         .WithMany("ProductFilterTags")
-                        .HasForeignKey("ProductId")
+                        .HasForeignKey("LayoutProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("FilterTag");
 
-                    b.Navigation("Product");
+                    b.Navigation("LayoutProduct");
                 });
 
-            modelBuilder.Entity("layoutlovers.Products.Product", b =>
+            modelBuilder.Entity("layoutlovers.Purchases.Purchase", b =>
                 {
-                    b.HasOne("layoutlovers.Categories.Category", "Category")
-                        .WithMany("Products")
-                        .HasForeignKey("CategoryId")
+                    b.HasOne("layoutlovers.LayoutProducts.LayoutProduct", "LayoutProduct")
+                        .WithMany("Purchases")
+                        .HasForeignKey("LayoutProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Category");
+                    b.HasOne("layoutlovers.Authorization.Users.User", "User")
+                        .WithMany("Purchases")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LayoutProduct");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("layoutlovers.ShoppingCarts.ShoppingCart", b =>
                 {
-                    b.HasOne("layoutlovers.Products.Product", "Product")
+                    b.HasOne("layoutlovers.LayoutProducts.LayoutProduct", "LayoutProduct")
                         .WithMany("ShoppingCarts")
-                        .HasForeignKey("ProductId")
+                        .HasForeignKey("LayoutProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -2657,7 +2851,7 @@ namespace layoutlovers.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Product");
+                    b.Navigation("LayoutProduct");
 
                     b.Navigation("User");
                 });
@@ -2711,6 +2905,11 @@ namespace layoutlovers.Migrations
                     b.Navigation("Children");
                 });
 
+            modelBuilder.Entity("layoutlovers.Amazon.AmazonS3File", b =>
+                {
+                    b.Navigation("DownloadAmazonS3Files");
+                });
+
             modelBuilder.Entity("layoutlovers.Authorization.Roles.Role", b =>
                 {
                     b.Navigation("Claims");
@@ -2722,6 +2921,8 @@ namespace layoutlovers.Migrations
                 {
                     b.Navigation("Claims");
 
+                    b.Navigation("DownloadAmazonS3Files");
+
                     b.Navigation("Favorites");
 
                     b.Navigation("Logins");
@@ -2729,6 +2930,8 @@ namespace layoutlovers.Migrations
                     b.Navigation("OrganizationUnits");
 
                     b.Navigation("Permissions");
+
+                    b.Navigation("Purchases");
 
                     b.Navigation("Roles");
 
@@ -2749,7 +2952,7 @@ namespace layoutlovers.Migrations
                     b.Navigation("ProductFilterTags");
                 });
 
-            modelBuilder.Entity("layoutlovers.Products.Product", b =>
+            modelBuilder.Entity("layoutlovers.LayoutProducts.LayoutProduct", b =>
                 {
                     b.Navigation("AmazonS3Files");
 
@@ -2757,7 +2960,14 @@ namespace layoutlovers.Migrations
 
                     b.Navigation("ProductFilterTags");
 
+                    b.Navigation("Purchases");
+
                     b.Navigation("ShoppingCarts");
+                });
+
+            modelBuilder.Entity("layoutlovers.Editions.SubscribableEdition", b =>
+                {
+                    b.Navigation("DownloadRestrictions");
                 });
 #pragma warning restore 612, 618
         }

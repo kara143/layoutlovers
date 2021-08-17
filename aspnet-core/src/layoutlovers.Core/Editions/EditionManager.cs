@@ -8,7 +8,7 @@ namespace layoutlovers.Editions
 {
     public class EditionManager : AbpEditionManager
     {
-        public const string DefaultEditionName = "Standard";
+        public const string DefaultEditionName = "Free";
 
         public EditionManager(
             IRepository<Edition> editionRepository,

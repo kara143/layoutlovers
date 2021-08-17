@@ -1,6 +1,6 @@
 ﻿using Abp.Domain.Entities.Auditing;
 using layoutlovers.FilterTags;
-using layoutlovers.Products;
+using layoutlovers.LayoutProducts;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -9,8 +9,8 @@ namespace layoutlovers.ProductFilterTags
     [Table("AppProductFilterTags")]
     public class ProductFilterTag: FullAuditedEntity<Guid>, IProductFilterTag
     {
-        public Guid ProductId { get; set; }
-        public virtual Product Product { get; set; }
+        public Guid LayoutProductId { get; set; }
+        public virtual LayoutProduct LayoutProduct { get; set; }
         public Guid FilterTagId { get; set; }
         public virtual FilterTag FilterTag { get; set; }
     }

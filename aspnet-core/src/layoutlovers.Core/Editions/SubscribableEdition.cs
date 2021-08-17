@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using Abp.Application.Editions;
+using layoutlovers.DownloadRestrictions;
 using layoutlovers.MultiTenancy.Payments;
 
 namespace layoutlovers.Editions
@@ -24,7 +26,7 @@ namespace layoutlovers.Editions
         public decimal? AnnualPrice { get; set; }
 
         public int? TrialDayCount { get; set; }
-
+        public virtual ICollection<DownloadRestriction> DownloadRestrictions { get; set; }
         /// <summary>
         /// The account will be taken an action (termination of tenant account) after the specified days when the subscription is expired.
         /// </summary>

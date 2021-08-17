@@ -1,0 +1,20 @@
+﻿using Abp.Application.Services;
+using Abp.Application.Services.Dto;
+using layoutlovers.LayoutProducts.Dto;
+using layoutlovers.MultiTenancy.Payments.Stripe.Dto;
+using layoutlovers.Purchases.Dto;
+using System;
+using System.Threading.Tasks;
+
+namespace layoutlovers.LayoutProducts
+{
+    public interface ILayoutProductsAppService : IApplicationService
+    {
+        Task<LayoutProductDto> Create(CreateLayoutProductDto input);
+        Task<LayoutProductDto> GetById(Guid id);
+        LayoutProductDto GetByIdAndIncluding(Guid id);
+        Task<PagedResultDto<LayoutProductDto>> GetProducts(GetLayoutProductsInput input);
+        Task<LayoutProductDto> Update(UpdateLayoutProductDto input);
+        Task<PurchaseDto> BuyProduct(BuyProductCard buyProductCard);
+    }
+}

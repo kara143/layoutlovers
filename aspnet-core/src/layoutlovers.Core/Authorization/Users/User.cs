@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using Abp.Auditing;
 using Abp.Authorization.Users;
 using Abp.Extensions;
 using Abp.Timing;
+using layoutlovers.DownloadAmazonS3Files;
 using layoutlovers.Favorites;
+using layoutlovers.Purchases;
 using layoutlovers.ShoppingCarts;
 
 namespace layoutlovers.Authorization.Users
@@ -28,6 +29,11 @@ namespace layoutlovers.Authorization.Users
 
         public virtual ICollection<Favorite> Favorites { get; set; }
         public virtual ICollection<ShoppingCart> ShoppingCarts { get; set; }
+        public virtual ICollection<Purchase> Purchases { get; set; }
+        public virtual ICollection<DownloadAmazonS3File> DownloadAmazonS3Files { get; set; }
+
+        // FACEPALM if there will an error
+        public int DownloadToday { set; get; }
         //Can add application specific user properties here
 
         public User()

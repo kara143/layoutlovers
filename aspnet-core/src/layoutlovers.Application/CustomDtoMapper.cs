@@ -37,18 +37,21 @@ using layoutlovers.FilterTags.Dto;
 using layoutlovers.Friendships;
 using layoutlovers.Friendships.Cache;
 using layoutlovers.Friendships.Dto;
+using layoutlovers.LayoutProducts;
+using layoutlovers.LayoutProducts.Dto;
 using layoutlovers.Localization.Dto;
 using layoutlovers.MultiTenancy;
+using layoutlovers.MultiTenancy.Accounting.Dto;
 using layoutlovers.MultiTenancy.Dto;
 using layoutlovers.MultiTenancy.HostDashboard.Dto;
 using layoutlovers.MultiTenancy.Payments;
 using layoutlovers.MultiTenancy.Payments.Dto;
+using layoutlovers.MultiTenancy.Payments.Stripe.Dto;
 using layoutlovers.Notifications.Dto;
 using layoutlovers.Organizations.Dto;
-using layoutlovers.Products;
-using layoutlovers.Products.Dto;
 using layoutlovers.Sessions.Dto;
 using layoutlovers.WebHooks.Dto;
+using Stripe;
 
 namespace layoutlovers
 {
@@ -88,15 +91,17 @@ namespace layoutlovers
             configuration.CreateMap<FilterTagDto, FilterTag>();
 
             configuration.CreateMap<Category, CategoryDto>();
+            configuration.CreateMap<BuyProductCard, PaymentCardDto>();
+            configuration.CreateMap<PaymentCardDto, TokenCardOptions>();
 
-            configuration.CreateMap<CreateProductDto, Product>();
-            configuration.CreateMap<Product, CreateProductDto>();
+            configuration.CreateMap<CreateLayoutProductDto, LayoutProduct>();
+            configuration.CreateMap<LayoutProduct, CreateLayoutProductDto>();
             configuration.CreateMap<AmazonS3File, S3FileDtoBase>();
 
             configuration.CreateMap<AmazonS3File, S3ImageDto>();
             configuration.CreateMap<AmazonS3File, S3FileDto>();
 
-            configuration.CreateMap<Product, ProductDto>()
+            configuration.CreateMap<LayoutProduct, LayoutProductDto>()
                 .ForMember(dto => dto.Category, opt => opt.MapFrom(ent => ent.Category))
                 .ForMember(dto => dto.AmazonS3Files, opt => opt.MapFrom(ent => ent.AmazonS3Files));
             //Edition

@@ -7,5 +7,7 @@ namespace layoutlovers.Amazon
         string BucketName { get; }
         string AwsAccessKeyId { get; }
         string AwsSecretAccessKey { get; }
+        string ThumbnailImages { get; }
+        string FileTypes { get; }
     }
 }
