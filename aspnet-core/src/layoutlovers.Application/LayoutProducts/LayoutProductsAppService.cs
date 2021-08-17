@@ -272,6 +272,12 @@ namespace layoutlovers.LayoutProducts
                 throw new Exception($"Product with id {productId} not found!");
             }
 
+            if (product.LayoutProductType == LayoutProductType.Free)
+            {
+                throw new Exception($"Product ID {product.Id} is free of charge and " +
+                    $"therefore cannot be purchased.");
+            }
+
             var user = await GetCurrentUserAsync();
 
             var paymentCardDto = ObjectMapper.Map<PaymentCardDto>(buyProductCard);
