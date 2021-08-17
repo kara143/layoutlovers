@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Abp.Application.Services;
 using Abp.IdentityFramework;
-using Abp.MultiTenancy;
 using Abp.Runtime.Session;
 using Abp.Threading;
 using Microsoft.AspNetCore.Identity;
