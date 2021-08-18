@@ -13,6 +13,8 @@ namespace layoutlovers.LayoutProducts.Dto
         [Description("Free")]
         Free,
         [Description("Premium")]
-        Premium
+        Premium,
+        [Description("Popular")]
+        Popular
     }
 }
