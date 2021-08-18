@@ -86,8 +86,12 @@ namespace layoutlovers.DownloadAmazonS3Files
                     $" To download this product, you need to go to the plan above!");
             }
 
+            //Products downloaded by the current user today
+            var products = GetProductsByCurrentDay(userId);
+            var productsCount = products.Count();
+
             //We check if the daily download limit has been exceeded
-            if (user.DownloadToday >= restriction.DownloadPerDay)
+            if (productsCount >= restriction.DownloadPerDay)
             {
                 throw new Exception($"The user with Id {userId} has exceeded the daily download limit.");
             }
@@ -101,10 +105,9 @@ namespace layoutlovers.DownloadAmazonS3Files
             });
 
             //Update the number of downloaded files for the user today!
-            var products = GetProductsByCurrentDay(userId);
-            if (user.DownloadToday != products.Count())
+            if (!product.LayoutProductType.IsFree())
             {
-                user.DownloadToday = products.Count();
+                user.DownloadToday = productsCount;
                 await _userManager.UpdateAsync(user);
             }
 
