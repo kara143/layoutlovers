@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using layoutlovers.EntityFrameworkCore;
 
 namespace layoutlovers.Migrations
 {
     [DbContext(typeof(layoutloversDbContext))]
-    partial class layoutloversDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210819141944_Added_Purchase_Table_PaymentProvider_Property_Change_PurchaseItem_Table")]
+    partial class Added_Purchase_Table_PaymentProvider_Property_Change_PurchaseItem_Table
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

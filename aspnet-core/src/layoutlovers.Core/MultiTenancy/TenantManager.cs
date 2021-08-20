@@ -43,7 +43,8 @@ namespace layoutlovers.MultiTenancy
         private readonly IPasswordHasher<User> _passwordHasher;
         private readonly IRepository<SubscribableEdition> _subscribableEditionRepository;
         protected readonly IBackgroundJobManager _backgroundJobManager;
-        
+        protected readonly IRepository<Tenant> _tenantRepository;
+
         public TenantManager(
             IRepository<Tenant> tenantRepository,
             IRepository<TenantFeatureSetting, long> tenantFeatureRepository,
@@ -57,7 +58,7 @@ namespace layoutlovers.MultiTenancy
             IAbpZeroFeatureValueStore featureValueStore,
             IAbpZeroDbMigrator abpZeroDbMigrator,
             IPasswordHasher<User> passwordHasher,
-            IRepository<SubscribableEdition> subscribableEditionRepository, 
+            IRepository<SubscribableEdition> subscribableEditionRepository,
             IBackgroundJobManager backgroundJobManager) : base(
                 tenantRepository,
                 tenantFeatureRepository,
@@ -77,6 +78,7 @@ namespace layoutlovers.MultiTenancy
             _passwordHasher = passwordHasher;
             _subscribableEditionRepository = subscribableEditionRepository;
             _backgroundJobManager = backgroundJobManager;
+            _tenantRepository = tenantRepository;
         }
 
         public async Task<int> CreateWithAdminUserAsync(
@@ -317,6 +319,11 @@ namespace layoutlovers.MultiTenancy
             }
 
             return base.UpdateAsync(tenant);
+        }
+
+        public virtual Tenant GetByIdWithEdition(int id)
+        {
+            return _tenantRepository.GetAllIncluding(f => f.Edition).FirstOrDefault(f => f.Id == id);
         }
     }
 }

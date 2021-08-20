@@ -5,7 +5,7 @@ using Abp.Extensions;
 using Abp.Timing;
 using layoutlovers.DownloadAmazonS3Files;
 using layoutlovers.Favorites;
-using layoutlovers.Purchases;
+using layoutlovers.PurchaseItems;
 using layoutlovers.ShoppingCarts;
 
 namespace layoutlovers.Authorization.Users
@@ -29,7 +29,7 @@ namespace layoutlovers.Authorization.Users
 
         public virtual ICollection<Favorite> Favorites { get; set; }
         public virtual ICollection<ShoppingCart> ShoppingCarts { get; set; }
-        public virtual ICollection<Purchase> Purchases { get; set; }
+        public virtual ICollection<PurchaseItem> PurchaseItems { get; set; }
         public virtual ICollection<DownloadAmazonS3File> DownloadAmazonS3Files { get; set; }
 
         // FACEPALM if there will an error

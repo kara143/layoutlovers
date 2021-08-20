@@ -14,13 +14,12 @@ using layoutlovers.Amazon;
 using layoutlovers.MultiTenancy.Accounting.Dto;
 using layoutlovers.MultiTenancy.Payments.Stripe.Dto;
 using layoutlovers.MultiTenancy.Payments.Stripe;
+using Abp.Authorization;
+using layoutlovers.LayoutProducts.Dto;
 using layoutlovers.Purchases;
 using layoutlovers.Purchases.Dto;
-using Stripe;
-using Abp.Authorization;
-using layoutlovers.MultiTenancy.Payments;
-using layoutlovers.DownloadAmazonS3Files;
-using layoutlovers.LayoutProducts.Dto;
+using layoutlovers.PurchaseItems;
+using Abp.UI;
 
 namespace layoutlovers.LayoutProducts
 {
@@ -33,14 +32,14 @@ namespace layoutlovers.LayoutProducts
         private readonly IAmazonS3Manager _amazonS3Manager;
         private readonly IStripePaymentAppService _stripePaymentAppService;
         private readonly IPurchaseManager _purchaseManager;
-        private readonly IDownloadAmazonS3FileManager _downloadAmazonS3FileManager;
+        private readonly IPurchaseItemManager _purchaseItemManager;
         public LayoutProductsAppService(ILayoutProductManager layoutProductManager
             , IFilterTagManager filterTagManager
             , IProductFilterTagManager productFilterTagManager
             , IAmazonS3Manager amazonS3Manager
             , IStripePaymentAppService stripePaymentAppService
             , IPurchaseManager purchaseManager
-            , IDownloadAmazonS3FileManager downloadAmazonS3FileManager
+            , IPurchaseItemManager purchaseItemManager
             )
         {
             _productFilterTagManager = productFilterTagManager;
@@ -49,19 +48,19 @@ namespace layoutlovers.LayoutProducts
             _amazonS3Manager = amazonS3Manager;
             _stripePaymentAppService = stripePaymentAppService;
             _purchaseManager = purchaseManager;
-            _downloadAmazonS3FileManager = downloadAmazonS3FileManager;
+            _purchaseItemManager = purchaseItemManager;
         }
 
         public async Task<LayoutProductDto> Create(CreateLayoutProductDto input)
         {
             if (input.LayoutProductType.IsFree() && input.Amount != 0)
             {
-                throw new Exception("There cannot be an amount in a free product.");
+                throw new UserFriendlyException("There cannot be an amount in a free product.");
             }
 
             if (!input.LayoutProductType.IsFree() && input.Amount == 0)
             {
-                throw new Exception("There was no amount specified in the product.");
+                throw new UserFriendlyException("There was no amount specified in the product.");
             }
 
             try
@@ -93,7 +92,7 @@ namespace layoutlovers.LayoutProducts
             }
             catch (Exception ex)
             {
-                throw new Exception($"An error occurred while creating a product named: {input.Name}.", ex);
+                throw new UserFriendlyException($"An error occurred while creating a product named: {input.Name}.", ex);
             }
         }
 
@@ -187,7 +186,6 @@ namespace layoutlovers.LayoutProducts
         public async Task<PagedResultDto<LayoutProductDto>> GetProducts(GetLayoutProductsInput input)
         {
             var query = _layoutProductManager.GetAll();
-
             query = Filtering(input, query);
 
             var productCount = query.Count();
@@ -198,9 +196,22 @@ namespace layoutlovers.LayoutProducts
 
             var productListDtos = ObjectMapper.Map<List<LayoutProductDto>>(products);
 
+            var user = await GetCurrentUserAsync();
+
+            //Purchased products by the current user
+            var purchasedProductIds = _purchaseItemManager.GetAllPurchasedProductByUserId(user.Id)
+                .Select(f => f.Id)
+                .ToList();
+
+            var result = productListDtos.Select((product, i) =>
+            {
+                product.IsPurchased = purchasedProductIds.Any(i => i == product.Id);
+                return product;
+            }).ToList();
+
             return new PagedResultDto<LayoutProductDto>(
                 productCount,
-                productListDtos
+                result
             );
         }
 
@@ -208,16 +219,15 @@ namespace layoutlovers.LayoutProducts
         {
             var filter = input.Filter?.ToLower();
 
-            var filterTagDtos = input.FilterTagIds.Distinct().ToList();
-
             var productsTest = products
                 .WhereIf(input.CategoryId.HasValue, f => f.CategoryId == input.CategoryId)
                 .WhereIf(!string.IsNullOrEmpty(filter), f => f.Name.ToLower().Contains(filter));
 
             //If there is at least one occurrence,
             //also sort by number of matches!
-            if (filterTagDtos.IsNotEmpty())
+            if (input.FilterTagIds.IsNotEmpty())
             {
+                var filterTagDtos = input.FilterTagIds.Distinct().ToList();
                 var filterTagCount = filterTagDtos.Count();
 
                 products = productsTest
@@ -250,7 +260,7 @@ namespace layoutlovers.LayoutProducts
                     products = products.Where(f => f.LayoutProductType == LayoutProductType.Premium);
                     break;
                 default:
-                    throw new Exception($"This type: {input.SortFilter} is not supported.");
+                    throw new UserFriendlyException($"This type: {input.SortFilter} is not supported.");
             }
 
             if (!string.IsNullOrWhiteSpace(input.Sorting))
@@ -269,16 +279,23 @@ namespace layoutlovers.LayoutProducts
             var product = await _layoutProductManager.GetById(productId);
             if (product == null)
             {
-                throw new Exception($"Product with id {productId} not found!");
+                throw new UserFriendlyException($"Product with id {productId} not found!");
             }
 
             if (product.LayoutProductType == LayoutProductType.Free)
             {
-                throw new Exception($"Product ID {product.Id} is free of charge and " +
+                throw new UserFriendlyException($"Product ID {product.Id} is free of charge and " +
                     $"therefore cannot be purchased.");
             }
 
             var user = await GetCurrentUserAsync();
+
+            var isBought = await _purchaseItemManager.IsBought(productId, user.Id);
+            //Before making a payment, check if this product has already been purchased by the current user.
+            if (isBought)
+            {
+                throw new UserFriendlyException($"The product with id {productId} has already been purchased.");
+            }
 
             var paymentCardDto = ObjectMapper.Map<PaymentCardDto>(buyProductCard);
 
@@ -287,42 +304,11 @@ namespace layoutlovers.LayoutProducts
             paymentCardDto.Amount = product.Amount;
             paymentCardDto.Currency = "USD";
 
-            var charge = _stripePaymentAppService.MakePayment(paymentCardDto);
-            var purchaseDto = await InsertPurchaseAsync(charge, productId, user.Id);
-            return purchaseDto;
-        }
+            var charge = await _stripePaymentAppService.TryBuyProduct(paymentCardDto);
 
-        private async Task<PurchaseDto> InsertPurchaseAsync(Charge charge, Guid productId, long userId)
-        {
-            var purchaseToCreate = CreateBlankPurchase(charge, productId, userId);
-
-            var purchase = await _purchaseManager.InsertAsync(purchaseToCreate);
-
+            var purchase = await _purchaseManager.InsertPurchaseAsync(charge, new List<LayoutProduct> { product }, user.Id);
             var purchaseDto = ObjectMapper.Map<PurchaseDto>(purchase);
             return purchaseDto;
-        }
-
-        private Purchase CreateBlankPurchase(Charge charge, Guid productId, long userId)
-        {
-            var purchase = new Purchase
-            {
-                LayoutProductId = productId,
-                UserId = userId,
-                Status = charge.Status,
-                ChargeId = charge.Id,
-                ReceiptUrl = charge.ReceiptUrl,
-            };
-
-            if (charge.Status.Equals("succeeded", StringComparison.InvariantCultureIgnoreCase))
-            {
-                purchase.RequestPayerStatus = RequestPayerStatus.Successful;
-            }
-            else
-            {
-                purchase.RequestPayerStatus = RequestPayerStatus.Failed;
-                purchase.FailureMessage = charge.FailureMessage;
-            }
-            return purchase;
         }
     }
 }

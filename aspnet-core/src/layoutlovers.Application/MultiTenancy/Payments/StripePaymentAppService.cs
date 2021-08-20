@@ -21,19 +21,22 @@ namespace layoutlovers.MultiTenancy.Payments
         private readonly IPaymentAppService _paymentAppService;
         private readonly StripeGatewayManager _stripeGatewayManager;
         private readonly StripePaymentGatewayConfiguration _stripePaymentGatewayConfiguration;
-       
+        private readonly EditionManager _editionManager;
+
         public StripePaymentAppService(
             StripeGatewayManager stripeGatewayManager,
             StripePaymentGatewayConfiguration stripePaymentGatewayConfiguration,
             ISubscriptionPaymentRepository subscriptionPaymentRepository,
             ISubscriptionPaymentExtensionDataRepository subscriptionPaymentExtensionDataRepository,
-            IPaymentAppService paymentAppService)
+            IPaymentAppService paymentAppService,
+            EditionManager editionManager)
         {
             _stripeGatewayManager = stripeGatewayManager;
             _stripePaymentGatewayConfiguration = stripePaymentGatewayConfiguration;
             _subscriptionPaymentRepository = subscriptionPaymentRepository;
             _subscriptionPaymentExtensionDataRepository = subscriptionPaymentExtensionDataRepository;
             _paymentAppService = paymentAppService;
+            _editionManager = editionManager;
         }
 
         [RemoteService(false)]
@@ -255,8 +258,28 @@ namespace layoutlovers.MultiTenancy.Payments
             }
             catch (Exception ex)
             {
-                throw new Exception($"Problem with payment on this card: {card.Number}. {ex.Message}", ex);
+                throw new UserFriendlyException($"Problem with payment on this card: {card.Number}. {ex.Message}", ex);
             }
+        }
+
+        public async Task<Charge> TryBuyProduct(PaymentCardDto card)
+        {
+            var tenant = await GetCurrentTenantAsync();
+            if (!tenant.EditionId.HasValue)
+            {
+                throw new UserFriendlyException($"The tenant with Id {tenant.Id} dont have edition.");
+            }
+
+            var editionId = (int)tenant.EditionId;
+
+            //Only a free subscription is eligible to buy a product or pay for a basket.
+            var isFree = await _editionManager.IsFree(editionId);
+            if (!isFree)
+            {
+                throw new UserFriendlyException($"Products can only be purchased with a {EditionManager.DefaultEditionName} subscription.");
+            }
+
+            return MakePayment(card);
         }
 
         private Charge MakeCharge(TokenCardOptions card, TransactionDto transaction)

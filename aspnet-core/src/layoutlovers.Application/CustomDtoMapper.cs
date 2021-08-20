@@ -93,6 +93,8 @@ namespace layoutlovers
             configuration.CreateMap<Category, CategoryDto>();
             configuration.CreateMap<BuyProductCard, PaymentCardDto>();
             configuration.CreateMap<PaymentCardDto, TokenCardOptions>();
+            configuration.CreateMap<PaymentCardDto, BuyProduct>();
+            configuration.CreateMap<BuyProduct, PaymentCardDto>();
 
             configuration.CreateMap<CreateLayoutProductDto, LayoutProduct>();
             configuration.CreateMap<LayoutProduct, CreateLayoutProductDto>();
