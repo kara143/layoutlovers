@@ -1,4 +1,5 @@
-﻿using layoutlovers.Amazon;
+﻿using Abp.UI;
+using layoutlovers.Amazon;
 using layoutlovers.DownloadAmazonS3Files;
 using layoutlovers.Files;
 using layoutlovers.Files.Dto;
@@ -65,7 +66,7 @@ namespace layoutlovers.AmazonS3Files
 
             if (!tenant.EditionId.HasValue)
             {
-                throw new Exception($"Edition not found");
+                throw new UserFriendlyException($"Edition not found");
             }
 
             var editionId = (int)tenant.EditionId;

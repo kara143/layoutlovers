@@ -47,6 +47,13 @@ namespace layoutlovers
                 return TenantManager.GetByIdAsync(AbpSession.GetTenantId());
             }
         }
+        protected virtual Tenant GetCurrentTenantWithEdition()
+        {
+            using (CurrentUnitOfWork.SetTenantId(null))
+            {
+                return TenantManager.GetByIdWithEdition(AbpSession.GetTenantId());
+            }
+        }
 
         protected virtual Tenant GetCurrentTenant()
         {

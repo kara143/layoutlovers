@@ -17,10 +17,11 @@ using layoutlovers.Favorites;
 using layoutlovers.FilterTags;
 using layoutlovers.ProductFilterTags;
 using layoutlovers.ShoppingCarts;
-using layoutlovers.Purchases;
+using layoutlovers.PurchaseItems;
 using layoutlovers.DownloadRestrictions;
 using layoutlovers.DownloadAmazonS3Files;
 using layoutlovers.LayoutProducts;
+using layoutlovers.Purchases;
 
 namespace layoutlovers.EntityFrameworkCore
 {
@@ -45,16 +46,17 @@ namespace layoutlovers.EntityFrameworkCore
         public virtual DbSet<SubscriptionPaymentExtensionData> SubscriptionPaymentExtensionDatas { get; set; }
 
         public virtual DbSet<UserDelegation> UserDelegations { get; set; }
-        public virtual DbSet<LayoutProduct> Products { get; set; }
+        public virtual DbSet<LayoutProduct> LayoutProducts { get; set; }
         public virtual DbSet<Category> Categories { get; set; }
         public virtual DbSet<AmazonS3File> AmazonS3Files { get; set; }
         public virtual DbSet<Favorite> Favorites { get; set; }
         public virtual DbSet<FilterTag> FilterTags { get; set; }
         public virtual DbSet<ProductFilterTag> ProductFilterTags { set; get; }
         public virtual DbSet<ShoppingCart>ShoppingCarts { set; get; }
-        public virtual DbSet<Purchase> Purchases { get; set; }
+        public virtual DbSet<PurchaseItem> PurchaseItems { get; set; }
         public virtual DbSet<DownloadAmazonS3File> DownloadAmazonS3Files { get; set; }
         public virtual DbSet<DownloadRestriction> DownloadRestrictions { get; set; }
+        public virtual DbSet<Purchase> Purchases { get; set; }
         
         public layoutloversDbContext(DbContextOptions<layoutloversDbContext> options)
             : base(options)
@@ -112,7 +114,7 @@ namespace layoutlovers.EntityFrameworkCore
                 b.HasIndex(e => new { e.TenantId, e.TargetUserId });
             });
 
-            //Product
+            //LayoutProduct
             modelBuilder.Entity<LayoutProduct>()
                 .HasOne(pt => pt.Category)
                 .WithMany(p => p.Products)
@@ -157,14 +159,14 @@ namespace layoutlovers.EntityFrameworkCore
              .HasForeignKey(pt => pt.UserId);
 
             //Purchase
-            modelBuilder.Entity<Purchase>()
+            modelBuilder.Entity<PurchaseItem>()
              .HasOne(pt => pt.LayoutProduct)
-             .WithMany(p => p.Purchases)
+             .WithMany(p => p.PurchaseItems)
              .HasForeignKey(pt => pt.LayoutProductId);
 
-            modelBuilder.Entity<Purchase>()
+            modelBuilder.Entity<PurchaseItem>()
              .HasOne(pt => pt.User)
-             .WithMany(p => p.Purchases)
+             .WithMany(p => p.PurchaseItems)
              .HasForeignKey(pt => pt.UserId);
 
             //DownloadAmazonS3File
@@ -183,6 +185,12 @@ namespace layoutlovers.EntityFrameworkCore
                 .HasOne(pt => pt.SubscribableEdition)
                 .WithMany(p => p.DownloadRestrictions)
                 .HasForeignKey(pt => pt.SubscribableEditionId);
+
+            //Purchase
+            modelBuilder.Entity<PurchaseItem>()
+                .HasOne(pt => pt.Purchase)
+                .WithMany(p => p.PurchaseItems)
+                .HasForeignKey(pt => pt.PurchaseId);
 
             modelBuilder.ConfigurePersistedGrantEntity();
         }

@@ -10,8 +10,9 @@ namespace layoutlovers.LayoutProducts.Dto
     [AutoMap(typeof(LayoutProduct))]
     public class LayoutProductDto: LayoutProductEnity
     {
-        public virtual CategoryDto Category { get; set; }
-        public virtual ICollection<S3FileDtoBase> AmazonS3Files { set; get; }
+        public bool IsPurchased { get; set; }
+        public CategoryDto Category { get; set; }
+        public IEnumerable<S3FileDtoBase> AmazonS3Files { set; get; }
         public IEnumerable<FilterTagDto> FilterTagDtos { get; set; }
     }
 }

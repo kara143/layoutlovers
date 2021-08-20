@@ -17,5 +17,6 @@ namespace layoutlovers.MultiTenancy.Payments.Stripe
 
         Task<string> CreatePaymentSession(StripeCreatePaymentSessionInput input);
         Charge MakePayment(PaymentCardDto card);
+        Task<Charge> TryBuyProduct(PaymentCardDto card);
     }
 }

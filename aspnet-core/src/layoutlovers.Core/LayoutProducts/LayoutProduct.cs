@@ -2,7 +2,7 @@
 using layoutlovers.Categories;
 using layoutlovers.Favorites;
 using layoutlovers.ProductFilterTags;
-using layoutlovers.Purchases;
+using layoutlovers.PurchaseItems;
 using layoutlovers.ShoppingCarts;
 using System;
 using System.Collections.Generic;
@@ -22,6 +22,6 @@ namespace layoutlovers.LayoutProducts
         public virtual ICollection<Favorite> Favorites { get; set; }
         public virtual ICollection<ShoppingCart> ShoppingCarts { get; set; }
         public virtual ICollection<ProductFilterTag> ProductFilterTags { get; set; }
-        public virtual ICollection<Purchase> Purchases { get; set; }
+        public virtual ICollection<PurchaseItem> PurchaseItems { get; set; }
     }
 }
