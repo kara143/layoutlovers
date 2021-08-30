@@ -265,7 +265,7 @@ namespace layoutlovers.LayoutProducts
                         Count = f.PurchaseItems.Count,
                         Product = f
                     })
-                        .OrderByDescending(f => f.Count)
+                        .OrderBy(f => f.Count)
                         .Select(f => f.Product);
 
                     break;
