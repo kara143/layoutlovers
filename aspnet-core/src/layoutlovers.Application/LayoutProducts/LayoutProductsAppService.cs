@@ -219,7 +219,7 @@ namespace layoutlovers.LayoutProducts
         {
             var filter = input.Filter?.ToLower();
 
-            var productsTest = products
+            products = products
                 .WhereIf(input.CategoryId.HasValue, f => f.CategoryId == input.CategoryId)
                 .WhereIf(!string.IsNullOrEmpty(filter), f => f.Name.ToLower().Contains(filter));
 
@@ -230,7 +230,7 @@ namespace layoutlovers.LayoutProducts
                 var filterTagDtos = input.FilterTagIds.Distinct().ToList();
                 var filterTagCount = filterTagDtos.Count();
 
-                products = productsTest
+                products = products
                     .Select(product => new
                     {
                         product = product,
