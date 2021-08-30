@@ -104,7 +104,7 @@ namespace layoutlovers.ShoppingCarts
             var shoppingCartItem = _shoppingCartManager.GetAll().FirstOrDefault(f => f.UserId == input.UserId
                                                         && f.LayoutProductId == input.LayoutProductId);
 
-            //check if there is a similar entry in the basket of this user
+            //Check if there is a similar entry in the basket of this user
             if (shoppingCartItem.IsNotNull())
             {
                 throw new UserFriendlyException($"There is already an entry in the shopping cart with the given user id {input.UserId}" +

@@ -10,5 +10,6 @@ namespace layoutlovers.Files.Dto
         public FileType FileExtension { get; set; }
         public Guid LayoutProductId { get; set; }
         public bool IsImage { get; set; }
+        public int CountDownloads { get; set; }
     }
 }

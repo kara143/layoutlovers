@@ -14,6 +14,7 @@ namespace layoutlovers.ShoppingCarts
         , UpdateShoppingCartDto>
     {
         Task<PurchaseDto> BuyShoppingCart(BuyProduct buyProduct);
+        //Task<ShoppingCartDto> CreateAsync(CreateShoppingCartDto input);
         Task<GetShoppingCartDto> GetCurrentUserShoppingCart();
     }
 }

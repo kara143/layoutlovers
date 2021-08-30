@@ -78,6 +78,12 @@ namespace layoutlovers.DownloadAmazonS3Files
                 return downloadAmazonS3File;
             }
             downloadAmazonS3File = await SaveToPaidVersion(editionId, file, user);
+            
+            file.CountDownloads = await _amazonS3Manager.GetAll()
+                .Where(f => f.Id == file.Id)
+                .CountAsync();
+
+            await _amazonS3Manager.InsertOrUpdateAsync(file);
             return downloadAmazonS3File;
         }
 
@@ -98,7 +104,7 @@ namespace layoutlovers.DownloadAmazonS3Files
             var downloadProduct = await InsertAsync(new DownloadAmazonS3File
             {
                 UserId = userId,
-                AmazonS3FileId = file.Id
+                AmazonS3FileId = file.Id,
             });
 
             //We do not check the number of downloads since the free subscription has no limit
@@ -134,7 +140,7 @@ namespace layoutlovers.DownloadAmazonS3Files
             var downloadProduct = await InsertAsync(new DownloadAmazonS3File
             {
                 UserId = userId,
-                AmazonS3FileId = file.Id
+                AmazonS3FileId = file.Id,
             });
 
             //Update the number of downloaded files for the user today!
