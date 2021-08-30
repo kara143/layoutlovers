@@ -61,5 +61,18 @@ namespace layoutlovers
                 return TenantManager.GetByIdWithEdition(AbpSession.GetTenantId());
             }
         }
+
+        protected virtual async Task<int> GetEditionId()
+        {
+            var tenant = await GetCurrentTenantAsync();
+            if (!tenant.EditionId.HasValue)
+            {
+                throw new UserFriendlyException($"The tenant with Id {tenant.Id} dont have edition.");
+            }
+
+            var editionId = (int)tenant.EditionId;
+
+            return editionId;
+        }
     }
 }

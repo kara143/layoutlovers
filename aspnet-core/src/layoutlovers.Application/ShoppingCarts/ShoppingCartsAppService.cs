@@ -1,6 +1,7 @@
 ﻿using Abp.Application.Services.Dto;
 using Abp.Domain.Repositories;
 using Abp.UI;
+using layoutlovers.Editions;
 using layoutlovers.Extensions;
 using layoutlovers.MultiTenancy.Accounting.Dto;
 using layoutlovers.MultiTenancy.Payments.Stripe;
@@ -27,18 +28,21 @@ namespace layoutlovers.ShoppingCarts
         private readonly IPurchaseManager _purchaseManager;
         private readonly IShoppingCartManager _shoppingCartManager;
         private readonly IPurchaseItemManager _purchaseItemManager;
+        private readonly EditionManager _editionManager;
 
         public ShoppingCartsAppService(IRepository<ShoppingCart, Guid> repository
             , IStripePaymentAppService stripePaymentAppService
             , IPurchaseManager purchaseManager
             , IShoppingCartManager shoppingCartManager
             , IPurchaseItemManager purchaseItemManager
+            , EditionManager editionManager
             ) : base(repository)
         {
             _stripePaymentAppService = stripePaymentAppService;
             _purchaseManager = purchaseManager;
             _shoppingCartManager = shoppingCartManager;
             _purchaseItemManager = purchaseItemManager;
+            _editionManager = editionManager;
         }
 
         public async Task<GetShoppingCartDto> GetCurrentUserShoppingCart()
@@ -103,6 +107,16 @@ namespace layoutlovers.ShoppingCarts
         {
             var currentUser = await GetCurrentUserAsync();
             var userId = currentUser.Id;
+
+            var editionId = await GetEditionId();
+            //Only a free subscription is eligible to buy a product or pay for a basket.
+
+            var isFree = await _editionManager.IsFree(editionId);
+            if (!isFree)
+            {
+                throw new UserFriendlyException($"Add to shopping cart can only be purchased with a {EditionManager.DefaultEditionName} subscription.");
+            }
+
             var shoppingCartItem = _shoppingCartManager.GetAll().FirstOrDefault(f => f.UserId == userId
                                                         && f.LayoutProductId == input.LayoutProductId);
 
