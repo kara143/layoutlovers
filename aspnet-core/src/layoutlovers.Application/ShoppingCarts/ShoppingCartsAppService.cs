@@ -101,18 +101,20 @@ namespace layoutlovers.ShoppingCarts
 
         public override async Task<ShoppingCartDto> CreateAsync(CreateShoppingCartDto input)
         {
-            var shoppingCartItem = _shoppingCartManager.GetAll().FirstOrDefault(f => f.UserId == input.UserId
+            var currentUser = await GetCurrentUserAsync();
+            var userId = currentUser.Id;
+            var shoppingCartItem = _shoppingCartManager.GetAll().FirstOrDefault(f => f.UserId == userId
                                                         && f.LayoutProductId == input.LayoutProductId);
 
             //Check if there is a similar entry in the basket of this user
             if (shoppingCartItem.IsNotNull())
             {
-                throw new UserFriendlyException($"There is already an entry in the shopping cart with the given user id {input.UserId}" +
+                throw new UserFriendlyException($"There is already an entry in the shopping cart with the given user id {userId}" +
                     $" and product id {input.LayoutProductId} .");
             }
             //Check if this product was purchased.
             //Since a product already purchased cannot be added to the basket.
-            var isBought = await _purchaseItemManager.IsBought(input.LayoutProductId, input.UserId);
+            var isBought = await _purchaseItemManager.IsBought(input.LayoutProductId, userId);
             if (isBought)
             {
                 throw new UserFriendlyException($"The product with ID {input.LayoutProductId} has already been purchased and therefore cannot be added to the basket.");
