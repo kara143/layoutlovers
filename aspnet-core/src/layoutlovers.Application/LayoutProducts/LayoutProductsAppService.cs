@@ -185,7 +185,7 @@ namespace layoutlovers.LayoutProducts
 
         public async Task<PagedResultDto<LayoutProductDto>> GetProducts(GetLayoutProductsInput input)
         {
-            var query = _layoutProductManager.GetAll();
+            var query = _layoutProductManager.GetAllIncluding(f => f.PurchaseItems);
             query = Filtering(input, query);
 
             var productCount = query.Count();
@@ -258,6 +258,16 @@ namespace layoutlovers.LayoutProducts
                     break;
                 case SortFilter.Premium:
                     products = products.Where(f => f.LayoutProductType == LayoutProductType.Premium);
+                    break;
+                case SortFilter.Popular:
+                    products = products.Select(f => new
+                    {
+                        Count = f.PurchaseItems.Count,
+                        Product = f
+                    })
+                        .OrderByDescending(f => f.Count)
+                        .Select(f => f.Product);
+
                     break;
                 default:
                     throw new UserFriendlyException($"This type: {input.SortFilter} is not supported.");

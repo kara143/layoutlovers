@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using layoutlovers.EntityFrameworkCore;
 
 namespace layoutlovers.Migrations
 {
     [DbContext(typeof(layoutloversDbContext))]
-    partial class layoutloversDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210820122812_Added_LayoutProduct_to_DownloadAmazonS3File")]
+    partial class Added_LayoutProduct_to_DownloadAmazonS3File
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1393,9 +1395,6 @@ namespace layoutlovers.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<long>("CountDownloads")
-                        .HasColumnType("bigint");
-
                     b.Property<DateTime>("CreationTime")
                         .HasColumnType("datetime2");
 
@@ -1820,12 +1819,20 @@ namespace layoutlovers.Migrations
                     b.Property<long?>("LastModifierUserId")
                         .HasColumnType("bigint");
 
+                    b.Property<Guid?>("LayoutProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<long>("UserId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
                     b.HasIndex("AmazonS3FileId");
+
+                    b.HasIndex("LayoutProductId");
 
                     b.HasIndex("UserId");
 
@@ -2761,6 +2768,10 @@ namespace layoutlovers.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("layoutlovers.LayoutProducts.LayoutProduct", "LayoutProduct")
+                        .WithMany()
+                        .HasForeignKey("LayoutProductId");
+
                     b.HasOne("layoutlovers.Authorization.Users.User", "User")
                         .WithMany("DownloadAmazonS3Files")
                         .HasForeignKey("UserId")
@@ -2768,6 +2779,8 @@ namespace layoutlovers.Migrations
                         .IsRequired();
 
                     b.Navigation("AmazonS3File");
+
+                    b.Navigation("LayoutProduct");
 
                     b.Navigation("User");
                 });

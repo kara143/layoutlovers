@@ -12,6 +12,7 @@ namespace layoutlovers.Amazon
     {
         public FileType FileExtension { get; set; }
         public bool IsImage { get; set; }
+        public int CountDownloads { get; set; }
         public Guid LayoutProductId { get; set; }
         public virtual LayoutProduct  LayoutProduct { get; set; }
         public virtual ICollection<DownloadAmazonS3File> DownloadAmazonS3Files { get; set; }
