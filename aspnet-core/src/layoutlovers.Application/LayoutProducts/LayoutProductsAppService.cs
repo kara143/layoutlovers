@@ -248,27 +248,21 @@ namespace layoutlovers.LayoutProducts
                     //ignore
                     break;
                 case SortFilter.High:
-                    products = products.OrderBy(f => f.Amount);
-                    break;
+                    return products.OrderBy(f => f.Amount);
                 case SortFilter.Low:
-                    products = products.OrderByDescending(f => f.Amount);
-                    break;
+                    return products.OrderByDescending(f => f.Amount);
                 case SortFilter.Free:
-                    products = products.Where(f => f.LayoutProductType == LayoutProductType.Free);
-                    break;
+                    return products.Where(f => f.LayoutProductType == LayoutProductType.Free);
                 case SortFilter.Premium:
-                    products = products.Where(f => f.LayoutProductType == LayoutProductType.Premium);
-                    break;
+                    return products.Where(f => f.LayoutProductType == LayoutProductType.Premium);
                 case SortFilter.Popular:
-                    products = products.Select(f => new
+                    return products.Select(f => new
                     {
                         Count = f.PurchaseItems.Count,
                         Product = f
                     })
                         .OrderBy(f => f.Count)
                         .Select(f => f.Product);
-
-                    break;
                 default:
                     throw new UserFriendlyException($"This type: {input.SortFilter} is not supported.");
             }
