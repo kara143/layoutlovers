@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using layoutlovers.EntityFrameworkCore;
 
 namespace layoutlovers.Migrations
 {
     [DbContext(typeof(layoutloversDbContext))]
-    partial class layoutloversDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210903173914_UpdateS3File")]
+    partial class UpdateS3File
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

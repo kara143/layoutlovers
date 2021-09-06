@@ -1,6 +1,7 @@
 ﻿using Abp.Application.Services.Dto;
 using Abp.Domain.Repositories;
 using Abp.UI;
+using layoutlovers.Authorization.Users;
 using layoutlovers.Editions;
 using layoutlovers.Extensions;
 using layoutlovers.MultiTenancy.Accounting.Dto;
@@ -29,6 +30,7 @@ namespace layoutlovers.ShoppingCarts
         private readonly IShoppingCartManager _shoppingCartManager;
         private readonly IPurchaseItemManager _purchaseItemManager;
         private readonly EditionManager _editionManager;
+        private readonly IUserEmailer _userEmailer;
 
         public ShoppingCartsAppService(IRepository<ShoppingCart, Guid> repository
             , IStripePaymentAppService stripePaymentAppService
@@ -36,6 +38,7 @@ namespace layoutlovers.ShoppingCarts
             , IShoppingCartManager shoppingCartManager
             , IPurchaseItemManager purchaseItemManager
             , EditionManager editionManager
+            , IUserEmailer userEmailer
             ) : base(repository)
         {
             _stripePaymentAppService = stripePaymentAppService;
@@ -43,6 +46,7 @@ namespace layoutlovers.ShoppingCarts
             _shoppingCartManager = shoppingCartManager;
             _purchaseItemManager = purchaseItemManager;
             _editionManager = editionManager;
+            _userEmailer = userEmailer;
         }
 
         public async Task<GetShoppingCartDto> GetCurrentUserShoppingCart()
@@ -100,6 +104,9 @@ namespace layoutlovers.ShoppingCarts
             }
 
             var purchaseDto = ObjectMapper.Map<PurchaseDto>(purchase);
+            var purchaseItems = purchase.PurchaseItems.ToList();
+            await _userEmailer.SendNotificationAboutPurchaseProduct(user, purchase, purchaseItems);
+
             return purchaseDto;
         }
 
@@ -107,6 +114,11 @@ namespace layoutlovers.ShoppingCarts
         {
             var currentUser = await GetCurrentUserAsync();
             var userId = currentUser.Id;
+
+            if (userId != input.UserId)
+            {
+                throw new UserFriendlyException($"The passed id {input.UserId} is not the logged in user id {userId}");
+            }
 
             var editionId = await GetEditionId();
             //Only a free subscription is eligible to buy a product or pay for a basket.

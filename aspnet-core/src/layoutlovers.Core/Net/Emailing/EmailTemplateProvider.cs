@@ -40,6 +40,16 @@ namespace layoutlovers.Net.Emailing
             });
         }
 
+        public string GetTemplate(string name) 
+        {
+            using (var stream = typeof(EmailTemplateProvider).GetAssembly().GetManifestResourceStream(name))
+            {
+                var bytes = stream.GetAllBytes();
+                var template = Encoding.UTF8.GetString(bytes, 3, bytes.Length - 3);
+                return template;
+            }
+        }
+
         private string GetTenantLogoUrl(int? tenantId)
         {
             if (!tenantId.HasValue)

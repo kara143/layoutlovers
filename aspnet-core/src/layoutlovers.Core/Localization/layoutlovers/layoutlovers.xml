@@ -102,11 +102,19 @@
     <text name="PasswordReset">Password reset</text>
     <text name="InvalidUserNameOrEmailAddress">Invalid user name or email address</text>
     <text name="PasswordResetEmail_Subject">layoutlovers password reset</text>
+    <text name="Thanks_Purchase_Subject">Thanks For Your Purchase</text>
+    <text name="Thanks_NewProduct_Subject">New products have been added</text>
+    
     <text name="PasswordResetEmail_Title">layoutlovers password reset.</text>
     <text name="PasswordResetEmail_SubTitle">This email is sent you to reset and re-create your password.</text>
     <text name="PasswordResetEmail_ClickTheLinkBelowToResetYourPassword">Please click the link below to reset your password:</text>
     <text name="EmailActivation_Subject">layoutlovers account email activation</text>
     <text name="EmailActivation_Title">Welcome to layoutlovers.</text>
+    <text name="Email_Title_Thanks_Purchase">Thanks for your purchase!</text>
+    <text name="EMAIL_SUB_TITLE_Thanks_Purchase">Order #{0} from {1}</text>
+
+    <text name="Email_Title_New_Product">Hi {0}, check our new products!</text>
+    
     <text name="EmailActivation_SubTitle">This email is sent you to verify your email.</text>
     <text name="EmailActivation_ClickTheLinkBelowToVerifyYourEmail">Please click the link below to verify your email address:</text>
     <text name="InvalidEmailAddress">Invalid email address</text>

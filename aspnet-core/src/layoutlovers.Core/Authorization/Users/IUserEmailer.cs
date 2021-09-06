@@ -1,5 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using layoutlovers.Authorization.Users.EmailModels;
 using layoutlovers.Chat;
+using layoutlovers.PurchaseItems;
+using layoutlovers.Purchases;
 
 namespace layoutlovers.Authorization.Users
 {
@@ -14,6 +18,8 @@ namespace layoutlovers.Authorization.Users
         /// Can be set to user's plain password to include it in the email.
         /// </param>
         Task SendEmailActivationLinkAsync(User user, string link, string plainPassword = null);
+        Task SendNotificationAboutNewProducts(User user, List<LayoutProductWithPreviewUrls> layoutProducts);
+        Task SendNotificationAboutPurchaseProduct(User user, Purchase purchase, List<PurchaseItem> purchaseItems);
 
         /// <summary>
         /// Sends a password reset link to user's email.

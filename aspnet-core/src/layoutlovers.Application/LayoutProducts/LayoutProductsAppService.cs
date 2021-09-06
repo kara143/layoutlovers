@@ -20,6 +20,7 @@ using layoutlovers.Purchases;
 using layoutlovers.Purchases.Dto;
 using layoutlovers.PurchaseItems;
 using Abp.UI;
+using layoutlovers.Authorization.Users;
 
 namespace layoutlovers.LayoutProducts
 {
@@ -33,6 +34,7 @@ namespace layoutlovers.LayoutProducts
         private readonly IStripePaymentAppService _stripePaymentAppService;
         private readonly IPurchaseManager _purchaseManager;
         private readonly IPurchaseItemManager _purchaseItemManager;
+        private readonly IUserEmailer _userEmailer;
         public LayoutProductsAppService(ILayoutProductManager layoutProductManager
             , IFilterTagManager filterTagManager
             , IProductFilterTagManager productFilterTagManager
@@ -40,6 +42,7 @@ namespace layoutlovers.LayoutProducts
             , IStripePaymentAppService stripePaymentAppService
             , IPurchaseManager purchaseManager
             , IPurchaseItemManager purchaseItemManager
+            , IUserEmailer userEmailer
             )
         {
             _productFilterTagManager = productFilterTagManager;
@@ -49,6 +52,7 @@ namespace layoutlovers.LayoutProducts
             _stripePaymentAppService = stripePaymentAppService;
             _purchaseManager = purchaseManager;
             _purchaseItemManager = purchaseItemManager;
+            _userEmailer = userEmailer;
         }
 
         public async Task<LayoutProductDto> Create(CreateLayoutProductDto input)
@@ -312,6 +316,15 @@ namespace layoutlovers.LayoutProducts
 
             var purchase = await _purchaseManager.InsertPurchaseAsync(charge, new List<LayoutProduct> { product }, user.Id);
             var purchaseDto = ObjectMapper.Map<PurchaseDto>(purchase);
+
+            if (!purchase.PurchaseItems.Any())
+            {
+                throw new UserFriendlyException($"no items found in shopping with id {purchase.Id}");
+            }
+
+            var purchaseItems = purchase.PurchaseItems.ToList();
+             //We send a message about the purchase.
+            await _userEmailer.SendNotificationAboutPurchaseProduct(user, purchase, purchaseItems);
             return purchaseDto;
         }
     }

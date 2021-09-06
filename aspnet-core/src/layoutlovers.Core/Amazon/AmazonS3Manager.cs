@@ -122,7 +122,7 @@ namespace layoutlovers.Amazon
 
         public IEnumerable<IAmazonS3File> GetAllByProductId(Guid id)
         {
-            return _repository.GetAll().Where(f => f.LayoutProductId == id).ToArray();
+            return _repository.GetAll().Where(f => f.LayoutProductId == id).ToList();
         }
 
         public async Task<IAmazonS3File> GetById(Guid id)
