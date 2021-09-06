@@ -21,6 +21,8 @@ using layoutlovers.Configuration;
 using layoutlovers.EntityFrameworkCore;
 using layoutlovers.MultiTenancy;
 using layoutlovers.Web.Startup.ExternalLoginInfoProviders;
+using System;
+using layoutlovers.Jobs;
 
 namespace layoutlovers.Web.Startup
 {
@@ -44,6 +46,9 @@ namespace layoutlovers.Web.Startup
             Configuration.Modules.AbpWebCommon().MultiTenancy.DomainFormat =
                 _appConfiguration["App:ServerRootAddress"] ?? "https://localhost:44301/";
             Configuration.Modules.AspNetZero().LicenseCode = _appConfiguration["AbpZeroLicenseCode"];
+            //TODO: transfer to some settings
+            Configuration.BackgroundJobs.IsJobExecutionEnabled = true;
+            Configuration.BackgroundJobs.UserTokenExpirationPeriod = TimeSpan.FromHours(1);
         }
 
         public override void Initialize()
@@ -66,6 +71,7 @@ namespace layoutlovers.Web.Startup
             {
                 workManager.Add(IocManager.Resolve<SubscriptionExpirationCheckWorker>());
                 workManager.Add(IocManager.Resolve<SubscriptionExpireEmailNotifierWorker>());
+                workManager.Add(IocManager.Resolve<MakeNewProductPassiveWorker>());
             }
 
             if (Configuration.Auditing.IsEnabled && ExpiredAuditLogDeleterWorker.IsEnabled)

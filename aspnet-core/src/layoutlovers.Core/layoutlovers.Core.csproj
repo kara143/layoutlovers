@@ -17,6 +17,20 @@
     <EmbeddedResource Include="Localization\layoutlovers\*.xml;Net\Emailing\EmailTemplates\default.html" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Net\Emailing\EmailTemplates\footerTemplate.html" />
+    <None Remove="Net\Emailing\EmailTemplates\newProductsTemplate.html" />
+    <None Remove="Net\Emailing\EmailTemplates\newProducts\newProductsTemplateLi.html" />
+    <None Remove="Net\Emailing\EmailTemplates\purchaseTemplate.html" />
+    <None Remove="Net\Emailing\EmailTemplates\purchaseTemplateLi.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Net\Emailing\EmailTemplates\footerTemplate.html" />
+    <EmbeddedResource Include="Net\Emailing\EmailTemplates\newProducts\newProductsTemplate.html" />
+    <EmbeddedResource Include="Net\Emailing\EmailTemplates\newProducts\newProductsTemplateLi.html" />
+    <EmbeddedResource Include="Net\Emailing\EmailTemplates\purchaseTemplate.html" />
+    <EmbeddedResource Include="Net\Emailing\EmailTemplates\purchaseTemplateLi.html" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="AWSSDK.S3" Version="3.7.1.15" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />

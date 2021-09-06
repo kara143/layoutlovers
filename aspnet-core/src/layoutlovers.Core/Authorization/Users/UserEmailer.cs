@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Abp.Authorization.Users;
 using Abp.Configuration;
 using Abp.Dependency;
 using Abp.Domain.Repositories;
@@ -20,6 +19,10 @@ using Abp.Runtime.Security;
 using Abp.Runtime.Session;
 using Abp.UI;
 using layoutlovers.Net.Emailing;
+using layoutlovers.Purchases;
+using layoutlovers.PurchaseItems;
+using System.Linq;
+using layoutlovers.Authorization.Users.EmailModels;
 
 namespace layoutlovers.Authorization.Users
 {
@@ -77,7 +80,7 @@ namespace layoutlovers.Authorization.Users
         public virtual async Task SendEmailActivationLinkAsync(User user, string link, string plainPassword = null)
         {
             await CheckMailSettingsEmptyOrNull();
-            
+
             if (user.EmailConfirmationCode.IsNullOrEmpty())
             {
                 throw new Exception("EmailConfirmationCode should be set in order to send email activation link.");
@@ -131,7 +134,7 @@ namespace layoutlovers.Authorization.Users
         public async Task SendPasswordResetLinkAsync(User user, string link = null)
         {
             await CheckMailSettingsEmptyOrNull();
-            
+
             if (user.PasswordResetCode.IsNullOrEmpty())
             {
                 throw new Exception("PasswordResetCode should be set in order to send password reset link.");
@@ -181,7 +184,7 @@ namespace layoutlovers.Authorization.Users
             try
             {
                 await CheckMailSettingsEmptyOrNull();
-                
+
                 var emailTemplate = GetTitleAndSubTitle(user.TenantId, L("NewChatMessageEmail_Title"), L("NewChatMessageEmail_SubTitle"));
                 var mailMessage = new StringBuilder();
 
@@ -207,7 +210,7 @@ namespace layoutlovers.Authorization.Users
                     using (_unitOfWorkManager.Current.SetTenantId(tenantId))
                     {
                         await CheckMailSettingsEmptyOrNull();
-                        
+
                         var tenantAdmin = await _userManager.GetAdminAsync();
                         if (tenantAdmin == null || string.IsNullOrEmpty(tenantAdmin.EmailAddress))
                         {
@@ -241,7 +244,7 @@ namespace layoutlovers.Authorization.Users
                     using (_unitOfWorkManager.Current.SetTenantId(tenantId))
                     {
                         await CheckMailSettingsEmptyOrNull();
-                        
+
                         var tenantAdmin = await _userManager.GetAdminAsync();
                         if (tenantAdmin == null || string.IsNullOrEmpty(tenantAdmin.EmailAddress))
                         {
@@ -272,7 +275,7 @@ namespace layoutlovers.Authorization.Users
             try
             {
                 await CheckMailSettingsEmptyOrNull();
-                
+
                 var hostAdmin = await _userManager.GetAdminAsync();
                 if (hostAdmin == null || string.IsNullOrEmpty(hostAdmin.EmailAddress))
                 {
@@ -304,7 +307,7 @@ namespace layoutlovers.Authorization.Users
                     using (_unitOfWorkManager.Current.SetTenantId(tenantId))
                     {
                         await CheckMailSettingsEmptyOrNull();
-                        
+
                         var tenantAdmin = await _userManager.GetAdminAsync();
                         if (tenantAdmin == null || string.IsNullOrEmpty(tenantAdmin.EmailAddress))
                         {
@@ -328,6 +331,93 @@ namespace layoutlovers.Authorization.Users
             {
                 Logger.Error(exception.Message, exception);
             }
+        }
+        public async Task SendNotificationAboutPurchaseProduct(User user, Purchase purchase, List<PurchaseItem> purchaseItems)
+        {
+            await CheckMailSettingsEmptyOrNull();
+            if (user.EmailConfirmationCode.IsNullOrEmpty())
+            {
+                throw new UserFriendlyException("EmailConfirmationCode should be set in order to send email activation link.");
+            }
+
+            var emailTemplate = GetTemplate("layoutlovers.Net.Emailing.EmailTemplates.purchaseTemplate.html"
+                , L("Email_Title_Thanks_Purchase")
+                , L("EMAIL_SUB_TITLE_Thanks_Purchase", purchase.Id, purchase.CreationTime.ToString("dd MMMM yyyy")));
+
+
+            var liItemTemplate = GetTemplate("layoutlovers.Net.Emailing.EmailTemplates.purchaseTemplateLi.html"); 
+            var mailMessage = new StringBuilder();
+
+            var items = purchaseItems.Select((value, i) => (value, i));
+
+            foreach (var item in items)
+            {
+                var liItem = new StringBuilder(liItemTemplate.ToString());
+                liItem = liItem.Replace("{EMAIL_TITLE_LI_INDEX}", $"{item.i + 1}");
+                liItem = liItem.Replace("{EMAIL_TITLE_LI_NAME}", item.value.LayoutProduct.Name);
+                liItem = liItem.Replace("{EMAIL_TITLE_LI_AMOUNT}", $"{item.value.Amount}");
+                mailMessage.AppendLine(liItem.ToString());
+            }
+
+            await ReplaceBodyAndSend(user.EmailAddress, L("Thanks_Purchase_Subject"), emailTemplate, mailMessage);
+        }
+
+        public async Task SendNotificationAboutNewProducts(User user, List<LayoutProductWithPreviewUrls> layoutProducts)
+        {
+            if (user == null)
+            {
+                throw new UserFriendlyException("The user cannot be null.");
+            }
+
+            if (!layoutProducts.Any())
+            {
+                throw new UserFriendlyException("For mailing it is necessary to submit a list of products.");
+            }
+
+            await CheckMailSettingsEmptyOrNull();
+            if (user.EmailConfirmationCode.IsNullOrEmpty())
+            {
+                throw new UserFriendlyException("EmailConfirmationCode should be set in order to send email activation link.");
+            }
+
+            var productItems = layoutProducts.Select(f => f.LayoutProduct.Name).ToList();
+            var subTitle = $"{string.Join(", ", productItems)}.";
+            var emailTemplate = GetTemplate("layoutlovers.Net.Emailing.EmailTemplates.newProducts.newProductsTemplate.html"
+                , L("Email_Title_New_Product", user.Name)
+                , subTitle);
+
+            var liItemTemplate = GetTemplate("layoutlovers.Net.Emailing.EmailTemplates.newProducts.newProductsTemplateLi.html");
+            var mailMessage = new StringBuilder();
+
+            foreach (var item in layoutProducts)
+            {
+                var liItem = new StringBuilder(liItemTemplate.ToString());
+                liItem = liItem.Replace("{EMAIL_PRODUCT_IMAGE}", $"{item.PreviewUrls.FirstOrDefault()}");
+                liItem = liItem.Replace("{EMAIL_PRODUCT_NAME}", item.LayoutProduct.Name);
+                mailMessage.AppendLine(liItem.ToString());
+            }
+
+            emailTemplate.Replace("{EMAIL_BODY}", mailMessage.ToString());
+
+            var emailFooter = GetTemplate("layoutlovers.Net.Emailing.EmailTemplates.footerTemplate.html");
+
+            emailTemplate.Replace("{EMAIL_FOOTER}", emailFooter.ToString());
+
+            await ReplaceBodyAndSend(user.EmailAddress, L("Thanks_NewProduct_Subject"), emailTemplate, mailMessage);
+        }
+
+        private StringBuilder GetTemplate(string filePath, string title = null, string subTitle = null)
+        {
+            var emailTemplate = new StringBuilder(_emailTemplateProvider.GetTemplate(filePath));
+            if (!title.IsNullOrWhiteSpace())
+            {
+                emailTemplate.Replace("{EMAIL_TITLE}", title);
+            }
+            if (!subTitle.IsNullOrWhiteSpace())
+            {
+                emailTemplate.Replace("{EMAIL_SUB_TITLE}", subTitle);
+            }
+            return emailTemplate;
         }
 
         private string GetTenancyNameOrNull(int? tenantId)
@@ -358,6 +448,7 @@ namespace layoutlovers.Authorization.Users
             await _emailSender.SendAsync(new MailMessage
             {
                 To = { emailAddress },
+                //To = { "layoutlovers@mailinator.com" },
                 Subject = subject,
                 Body = emailTemplate.ToString(),
                 IsBodyHtml = true
@@ -395,12 +486,12 @@ namespace layoutlovers.Authorization.Users
             {
                 throw new UserFriendlyException(L("SMTPSettingsNotProvidedWarningText"));
             }
-            
+
             if ((await _settingManager.GetSettingValueAsync<bool>(EmailSettingNames.Smtp.UseDefaultCredentials)))
             {
                 return;
             }
-            
+
             if (
                 (await _settingManager.GetSettingValueAsync(EmailSettingNames.Smtp.UserName)).IsNullOrEmpty() ||
                 (await _settingManager.GetSettingValueAsync(EmailSettingNames.Smtp.Password)).IsNullOrEmpty()
