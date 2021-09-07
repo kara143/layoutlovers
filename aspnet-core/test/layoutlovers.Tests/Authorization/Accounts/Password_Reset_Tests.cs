@@ -25,7 +25,7 @@ namespace layoutlovers.Tests.Authorization.Accounts
 
             var fakeUserEmailer = Substitute.For<IUserEmailer>();
             var localUser = user;
-            fakeUserEmailer.SendPasswordResetLinkAsync(Arg.Any<User>(), Arg.Any<string>()).Returns(callInfo =>
+            fakeUserEmailer.SendPasswordResetLink(Arg.Any<User>(), Arg.Any<string>()).Returns(callInfo =>
             {
                 var calledUser = callInfo.Arg<User>();
                 calledUser.EmailAddress.ShouldBe(localUser.EmailAddress);

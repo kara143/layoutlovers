@@ -56,6 +56,9 @@
     <text name="MySettings">My settings</text>
     <text name="Logout">Logout</text>
     <text name="Reset">Reset</text>
+    <text name="Reset_Password">RESET PASSWORD</text>
+    <text name="DidNot_Reset_Password">Didn’t request to reset your password?</text>
+    <text name="Contact_Support">Contact Support.</text>
     <text name="ResetPermissionsTooltip">This button immediately resets user specific permission settings and saves changes. The user will only have permissions from assigned roles.</text>
     <text name="ResetSuccessfully">Reset successfully</text>
     <text name="Tenants">Tenants</text>
@@ -104,9 +107,10 @@
     <text name="PasswordResetEmail_Subject">layoutlovers password reset</text>
     <text name="Thanks_Purchase_Subject">Thanks For Your Purchase</text>
     <text name="Thanks_NewProduct_Subject">New products have been added</text>
-    
+
     <text name="PasswordResetEmail_Title">layoutlovers password reset.</text>
-    <text name="PasswordResetEmail_SubTitle">This email is sent you to reset and re-create your password.</text>
+    <text name="PasswordResetEmail_Title_LayoutLovers">Forgot your password?</text>
+    <text name="PasswordResetEmail_SubTitle_LayoutLovers">Hello! You requests a reset of your account password. If that sounds right, click the button below to reset your password.</text>
     <text name="PasswordResetEmail_ClickTheLinkBelowToResetYourPassword">Please click the link below to reset your password:</text>
     <text name="EmailActivation_Subject">layoutlovers account email activation</text>
     <text name="EmailActivation_Title">Welcome to layoutlovers.</text>

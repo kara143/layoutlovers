@@ -6,7 +6,6 @@ using Abp.Extensions;
 using Abp.IO.Extensions;
 using Abp.MultiTenancy;
 using Abp.Reflection.Extensions;
-using layoutlovers.MultiTenancy;
 using layoutlovers.Url;
 
 namespace layoutlovers.Net.Emailing
@@ -45,8 +44,7 @@ namespace layoutlovers.Net.Emailing
             using (var stream = typeof(EmailTemplateProvider).GetAssembly().GetManifestResourceStream(name))
             {
                 var bytes = stream.GetAllBytes();
-                var template = Encoding.UTF8.GetString(bytes, 3, bytes.Length - 3);
-                return template;
+                return Encoding.UTF8.GetString(bytes);
             }
         }
 
