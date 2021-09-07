@@ -19,16 +19,18 @@
   <ItemGroup>
     <None Remove="Net\Emailing\EmailTemplates\footerTemplate.html" />
     <None Remove="Net\Emailing\EmailTemplates\newProductsTemplate.html" />
-    <None Remove="Net\Emailing\EmailTemplates\newProducts\newProductsTemplateLi.html" />
+    <None Remove="Net\Emailing\EmailTemplates\NewProducts\newProductsTemplateLi.html" />
     <None Remove="Net\Emailing\EmailTemplates\purchaseTemplate.html" />
     <None Remove="Net\Emailing\EmailTemplates\purchaseTemplateLi.html" />
+    <None Remove="Net\Emailing\EmailTemplates\ResetPassword\resetPassword.html" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Net\Emailing\EmailTemplates\footerTemplate.html" />
-    <EmbeddedResource Include="Net\Emailing\EmailTemplates\newProducts\newProductsTemplate.html" />
-    <EmbeddedResource Include="Net\Emailing\EmailTemplates\newProducts\newProductsTemplateLi.html" />
+    <EmbeddedResource Include="Net\Emailing\EmailTemplates\NewProducts\newProductsTemplate.html" />
+    <EmbeddedResource Include="Net\Emailing\EmailTemplates\NewProducts\newProductsTemplateLi.html" />
     <EmbeddedResource Include="Net\Emailing\EmailTemplates\purchaseTemplate.html" />
     <EmbeddedResource Include="Net\Emailing\EmailTemplates\purchaseTemplateLi.html" />
+    <EmbeddedResource Include="Net\Emailing\EmailTemplates\ResetPassword\resetPassword.html" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AWSSDK.S3" Version="3.7.1.15" />

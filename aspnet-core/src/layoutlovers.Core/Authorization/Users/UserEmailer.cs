@@ -69,6 +69,7 @@ namespace layoutlovers.Authorization.Users
         }
 
         /// <summary>
+        /// Do not use
         /// Send email activation link to user's email address.
         /// </summary>
         /// <param name="user">User</param>
@@ -177,6 +178,45 @@ namespace layoutlovers.Authorization.Users
             }
 
             await ReplaceBodyAndSend(user.EmailAddress, L("PasswordResetEmail_Subject"), emailTemplate, mailMessage);
+        }
+        /// <summary>
+        /// New functionality
+        /// Sends a password reset link to user's email.
+        /// </summary>
+        /// <param name="user">User</param>
+        /// <param name="link">Reset link</param>
+        public async Task SendPasswordResetLink(User user, string link = null)
+        {
+            await CheckMailSettingsEmptyOrNull();
+
+            if (user.PasswordResetCode.IsNullOrEmpty())
+            {
+                throw new Exception("PasswordResetCode should be set in order to send password reset link.");
+            }
+
+            var emailTemplate = GetTemplate("layoutlovers.Net.Emailing.EmailTemplates.ResetPassword.resetPassword.html"
+                , L("PasswordResetEmail_Title_LayoutLovers")
+                , L("PasswordResetEmail_SubTitle_LayoutLovers"));
+
+            if (!link.IsNullOrEmpty())
+            {
+                link = link.Replace("{userId}", user.Id.ToString());
+                link = link.Replace("{resetCode}", Uri.EscapeDataString(user.PasswordResetCode));
+
+                if (user.TenantId.HasValue)
+                {
+                    link = link.Replace("{tenantId}", user.TenantId.ToString());
+                }
+
+                link = EncryptQueryParameters(link);
+
+                emailTemplate.Replace("{RESET_PASSWORD_LINK}", link);
+                emailTemplate.Replace("{DidNot_Reset_Password}", L("DidNot_Reset_Password"));
+                emailTemplate.Replace("{Contact_Support}", L("Contact_Support"));
+                emailTemplate.Replace("{Reset_Password}", L("Reset_Password"));
+            }
+
+            await ReplaceBodyAndSend(user.EmailAddress, L("PasswordResetEmail_Subject"), emailTemplate, null);
         }
 
         public async Task TryToSendChatMessageMail(User user, string senderUsername, string senderTenancyName, ChatMessage chatMessage)
@@ -345,7 +385,7 @@ namespace layoutlovers.Authorization.Users
                 , L("EMAIL_SUB_TITLE_Thanks_Purchase", purchase.Id, purchase.CreationTime.ToString("dd MMMM yyyy")));
 
 
-            var liItemTemplate = GetTemplate("layoutlovers.Net.Emailing.EmailTemplates.purchaseTemplateLi.html"); 
+            var liItemTemplate = GetTemplate("layoutlovers.Net.Emailing.EmailTemplates.purchaseTemplateLi.html");
             var mailMessage = new StringBuilder();
 
             var items = purchaseItems.Select((value, i) => (value, i));
@@ -382,11 +422,11 @@ namespace layoutlovers.Authorization.Users
 
             var productItems = layoutProducts.Select(f => f.LayoutProduct.Name).ToList();
             var subTitle = $"{string.Join(", ", productItems)}.";
-            var emailTemplate = GetTemplate("layoutlovers.Net.Emailing.EmailTemplates.newProducts.newProductsTemplate.html"
+            var emailTemplate = GetTemplate("layoutlovers.Net.Emailing.EmailTemplates.NewProducts.newProductsTemplate.html"
                 , L("Email_Title_New_Product", user.Name)
                 , subTitle);
 
-            var liItemTemplate = GetTemplate("layoutlovers.Net.Emailing.EmailTemplates.newProducts.newProductsTemplateLi.html");
+            var liItemTemplate = GetTemplate("layoutlovers.Net.Emailing.EmailTemplates.NewProducts.newProductsTemplateLi.html");
             var mailMessage = new StringBuilder();
 
             foreach (var item in layoutProducts)
@@ -444,11 +484,14 @@ namespace layoutlovers.Authorization.Users
 
         private async Task ReplaceBodyAndSend(string emailAddress, string subject, StringBuilder emailTemplate, StringBuilder mailMessage)
         {
-            emailTemplate.Replace("{EMAIL_BODY}", mailMessage.ToString());
+            if (mailMessage != null && !mailMessage.ToString().IsNullOrWhiteSpace())
+            {
+                emailTemplate.Replace("{EMAIL_BODY}", mailMessage.ToString());
+            }
+
             await _emailSender.SendAsync(new MailMessage
             {
                 To = { emailAddress },
-                //To = { "layoutlovers@mailinator.com" },
                 Subject = subject,
                 Body = emailTemplate.ToString(),
                 IsBodyHtml = true

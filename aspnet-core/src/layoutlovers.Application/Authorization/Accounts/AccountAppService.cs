@@ -123,7 +123,7 @@ namespace layoutlovers.Authorization.Accounts
         {
             var user = await GetUserByChecking(input.EmailAddress);
             user.SetNewPasswordResetCode();
-            await _userEmailer.SendPasswordResetLinkAsync(
+            await _userEmailer.SendPasswordResetLink(
                 user,
                 AppUrlService.CreatePasswordResetUrlFormat(AbpSession.TenantId)
                 );

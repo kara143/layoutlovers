@@ -20,6 +20,7 @@ namespace layoutlovers.Authorization.Users
         Task SendEmailActivationLinkAsync(User user, string link, string plainPassword = null);
         Task SendNotificationAboutNewProducts(User user, List<LayoutProductWithPreviewUrls> layoutProducts);
         Task SendNotificationAboutPurchaseProduct(User user, Purchase purchase, List<PurchaseItem> purchaseItems);
+        Task SendPasswordResetLink(User user, string link = null);
 
         /// <summary>
         /// Sends a password reset link to user's email.
