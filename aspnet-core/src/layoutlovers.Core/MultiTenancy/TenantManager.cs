@@ -173,7 +173,7 @@ namespace layoutlovers.MultiTenancy
                     if (sendActivationEmail)
                     {
                         adminUser.SetNewEmailConfirmationCode();
-                        await _userEmailer.SendEmailActivationLinkAsync(adminUser, emailActivationLink, adminPassword);
+                        await _userEmailer.SendEmailActivationLink(adminUser, emailActivationLink, adminPassword);
                     }
 
                     await _unitOfWorkManager.Current.SaveChangesAsync();

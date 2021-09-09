@@ -16,6 +16,13 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq.Dynamic.Core;
 using Abp.Collections.Extensions;
 using Abp.Linq.Extensions;
+using layoutlovers.Authorization.Users;
+using Abp.Domain.Repositories;
+using Abp.Domain.Uow;
+using layoutlovers.Extensions;
+using Stripe.Checkout;
+using Stripe;
+using layoutlovers.MultiTenancy.Payments.Stripe;
 
 namespace layoutlovers.MultiTenancy.Payments
 {
@@ -25,18 +32,30 @@ namespace layoutlovers.MultiTenancy.Payments
         private readonly EditionManager _editionManager;
         private readonly IPaymentGatewayStore _paymentGatewayStore;
         private readonly TenantManager _tenantManager;
-
+        private readonly IUserEmailer _userEmailer;
+        private readonly ISubscriptionPaymentExtensionDataRepository _subscriptionPaymentExtensionDataRepository;
+        private readonly IRepository<User, long> _userRepository;
+        private readonly IUnitOfWorkManager _unitOfWorkManager;
 
         public PaymentAppService(
             ISubscriptionPaymentRepository subscriptionPaymentRepository,
             EditionManager editionManager,
             IPaymentGatewayStore paymentGatewayStore,
-            TenantManager tenantManager)
+            TenantManager tenantManager
+            , IUserEmailer userEmailer
+            , IRepository<User, long> userRepository
+            , IUnitOfWorkManager unitOfWorkManager
+            , ISubscriptionPaymentExtensionDataRepository subscriptionPaymentExtensionDataRepository
+            )
         {
             _subscriptionPaymentRepository = subscriptionPaymentRepository;
             _editionManager = editionManager;
             _paymentGatewayStore = paymentGatewayStore;
             _tenantManager = tenantManager;
+            _userEmailer = userEmailer;
+            _userRepository = userRepository;
+            _unitOfWorkManager = unitOfWorkManager;
+            _subscriptionPaymentExtensionDataRepository = subscriptionPaymentExtensionDataRepository;
         }
 
         [AbpAuthorize(AppPermissions.Pages_Administration_Tenant_SubscriptionManagement)]
@@ -181,7 +200,9 @@ namespace layoutlovers.MultiTenancy.Payments
 
         public async Task NewRegistrationSucceed(long paymentId)
         {
-            var payment = await _subscriptionPaymentRepository.GetAsync(paymentId);
+            var payment = await _subscriptionPaymentRepository.GetAllIncluding(f => f.Edition)
+           .FirstOrDefaultAsync(f => f.Id == paymentId);
+
             if (payment.Status != SubscriptionPaymentStatus.Paid)
             {
                 throw new ApplicationException("Your payment is not completed !");
@@ -197,6 +218,28 @@ namespace layoutlovers.MultiTenancy.Payments
                 payment.EditionId,
                 EditionPaymentType.NewRegistration
             );
+
+            using (_unitOfWorkManager.Current.SetTenantId(payment.TenantId))
+            {
+                var sessionId = await _subscriptionPaymentExtensionDataRepository.GetExtensionDataAsync(payment.Id,
+                StripeGatewayManager.StripeSessionIdSubscriptionPaymentExtensionDataKey);
+
+                var customerService = new CustomerService();
+                var sessionService = new SessionService();
+                var session = await sessionService.GetAsync(sessionId);
+
+                if (string.IsNullOrWhiteSpace(session.CustomerDetails.Email))
+                {
+                    throw new UserFriendlyException("Customer details don't have email.");
+                }
+                var user = _userRepository.GetAll().FirstOrDefault(f => f.EmailAddress == session.CustomerDetails.Email);
+                if (user.IsNull())
+                {
+                    throw new UserFriendlyException($"No users were found for the tenent with ID {payment.TenantId}!");
+                }
+
+                await _userEmailer.SendNotificationNewRegistrationSucceed(user, payment);
+            }
         }
 
         public async Task UpgradeSucceed(long paymentId)

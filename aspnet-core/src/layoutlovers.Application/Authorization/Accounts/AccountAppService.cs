@@ -156,7 +156,7 @@ namespace layoutlovers.Authorization.Accounts
         {
             var user = await GetUserByChecking(input.EmailAddress);
             user.SetNewEmailConfirmationCode();
-            await _userEmailer.SendEmailActivationLinkAsync(
+            await _userEmailer.SendEmailActivationLink(
                 user,
                 AppUrlService.CreateEmailActivationUrlFormat(AbpSession.TenantId)
             );

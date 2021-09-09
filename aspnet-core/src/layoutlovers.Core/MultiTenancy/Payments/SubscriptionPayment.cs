@@ -29,6 +29,7 @@ namespace layoutlovers.MultiTenancy.Payments
         public PaymentPeriodType? PaymentPeriodType { get; set; }
 
         public string ExternalPaymentId { get; set; }
+        public long UserId { get; set; }
 
         public Edition Edition { get; set; }
 

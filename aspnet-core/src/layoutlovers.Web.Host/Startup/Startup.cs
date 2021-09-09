@@ -78,14 +78,16 @@ namespace layoutlovers.Web.Startup
                 options.AddPolicy(DefaultCorsPolicyName, builder =>
                 {
                     //App:CorsOrigins in appsettings.json can contain more than one address with splitted by comma.
-                    builder
-                        .WithOrigins(
-                            // App:CorsOrigins in appsettings.json can contain more than one address separated by comma.
-                            _appConfiguration["App:CorsOrigins"]
-                                .Split(",", StringSplitOptions.RemoveEmptyEntries)
-                                .Select(o => o.RemovePostFix("/"))
-                                .ToArray()
-                        )
+                    //builder
+                    //    .WithOrigins(
+                    //        // App:CorsOrigins in appsettings.json can contain more than one address separated by comma.
+                    //        _appConfiguration["App:CorsOrigins"]
+                    //            .Split(",", StringSplitOptions.RemoveEmptyEntries)
+                    //            .Select(o => o.RemovePostFix("/"))
+                    //            .ToArray()
+                    //    )
+                        builder.WithOrigins()
+                    .AllowAnyOrigin()
                         .SetIsOriginAllowedToAllowWildcardSubdomains()
                         .AllowAnyHeader()
                         .AllowAnyMethod()
@@ -202,7 +204,8 @@ namespace layoutlovers.Web.Startup
             app.UseStaticFiles();
             app.UseRouting();
 
-            app.UseCors(DefaultCorsPolicyName); //Enable CORS!
+            //app.UseCors(DefaultCorsPolicyName); //Enable CORS!
+            app.UseCors();
 
             app.UseAuthentication();
             app.UseJwtTokenMiddleware();
