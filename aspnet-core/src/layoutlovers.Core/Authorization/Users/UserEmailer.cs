@@ -23,6 +23,7 @@ using layoutlovers.Purchases;
 using layoutlovers.PurchaseItems;
 using System.Linq;
 using layoutlovers.Authorization.Users.EmailModels;
+using layoutlovers.MultiTenancy.Payments;
 
 namespace layoutlovers.Authorization.Users
 {
@@ -126,8 +127,44 @@ namespace layoutlovers.Authorization.Users
 
             await ReplaceBodyAndSend(user.EmailAddress, L("EmailActivation_Subject"), emailTemplate, mailMessage);
         }
+        /// <summary>
+        /// Send email activation link to user's email address.
+        /// </summary>
+        /// <param name="user">User</param>
+        /// <param name="link">Email activation link</param>
+        /// <param name="plainPassword">
+        /// Can be set to user's plain password to include it in the email.
+        /// </param>
+        [UnitOfWork]
+        public virtual async Task SendEmailActivationLink(User user, string link, string plainPassword = null)
+        {
+            await CheckMailSettingsAnduserEmail(user);
+
+            link = link.Replace("{userId}", user.Id.ToString());
+            link = link.Replace("{confirmationCode}", Uri.EscapeDataString(user.EmailConfirmationCode));
+
+            if (user.TenantId.HasValue)
+            {
+                link = link.Replace("{tenantId}", user.TenantId.ToString());
+            }
+
+            link = EncryptQueryParameters(link);
+
+            var emailTemplate = GetTemplate("layoutlovers.Net.Emailing.EmailTemplates.ResetPassword.resetPassword.html"
+                , L("Confirm_Your_Account")
+                , L("EmailActivation_SubTitle"));
+            
+
+            emailTemplate.Replace("{EMAIL_BUTTON_LINK}", link);
+            emailTemplate.Replace("{FOOTER_NOTIFICATION_TEXT}", L("DidNot_Reset_Password_Us"));
+            emailTemplate.Replace("{CONTACT_SUPPORT}", L("Contact_Support"));
+            emailTemplate.Replace("{EMAIL_BUTTON_NAME}", L("Email_Confirm_Button"));
+
+            await ReplaceBodyAndSend(user.EmailAddress, L("EmailActivation_Subject"), emailTemplate, null);
+        }
 
         /// <summary>
+        /// Do not use
         /// Sends a password reset link to user's email.
         /// </summary>
         /// <param name="user">User</param>
@@ -210,10 +247,10 @@ namespace layoutlovers.Authorization.Users
 
                 link = EncryptQueryParameters(link);
 
-                emailTemplate.Replace("{RESET_PASSWORD_LINK}", link);
-                emailTemplate.Replace("{DidNot_Reset_Password}", L("DidNot_Reset_Password"));
-                emailTemplate.Replace("{Contact_Support}", L("Contact_Support"));
-                emailTemplate.Replace("{Reset_Password}", L("Reset_Password"));
+                emailTemplate.Replace("{EMAIL_BUTTON_LINK}", link);
+                emailTemplate.Replace("{FOOTER_NOTIFICATION_TEXT}", L("DidNot_Reset_Password"));
+                emailTemplate.Replace("{CONTACT_SUPPORT}", L("Contact_Support"));
+                emailTemplate.Replace("{EMAIL_BUTTON_NAME}", L("Reset_Password"));
             }
 
             await ReplaceBodyAndSend(user.EmailAddress, L("PasswordResetEmail_Subject"), emailTemplate, null);
@@ -374,11 +411,7 @@ namespace layoutlovers.Authorization.Users
         }
         public async Task SendNotificationAboutPurchaseProduct(User user, Purchase purchase, List<PurchaseItem> purchaseItems)
         {
-            await CheckMailSettingsEmptyOrNull();
-            if (user.EmailConfirmationCode.IsNullOrEmpty())
-            {
-                throw new UserFriendlyException("EmailConfirmationCode should be set in order to send email activation link.");
-            }
+            await CheckMailSettingsAnduserEmail(user);
 
             var emailTemplate = GetTemplate("layoutlovers.Net.Emailing.EmailTemplates.purchaseTemplate.html"
                 , L("Email_Title_Thanks_Purchase")
@@ -402,23 +435,29 @@ namespace layoutlovers.Authorization.Users
             await ReplaceBodyAndSend(user.EmailAddress, L("Thanks_Purchase_Subject"), emailTemplate, mailMessage);
         }
 
+        public async Task SendNotificationUnsuccessfulPayment(User user)
+        {
+            await CheckMailSettingsAnduserEmail(user);
+
+            var emailTemplate = GetTemplate("layoutlovers.Net.Emailing.EmailTemplates.purchaseTemplate.html"
+                , L("Unsuccessful_Payment")
+                , L("Unsuccessful_Payment_SubTitle"));
+
+            emailTemplate.Replace("{EMAIL_BUTTON_NAME}", L("Unsuccessful_Payment_Button"));
+            emailTemplate.Replace("{FOOTER_NOTIFICATION_TEXT}", L("Need_Help"));
+            emailTemplate.Replace("{CONTACT_SUPPORT}", L("Contact_Support"));
+
+            await ReplaceBodyAndSend(user.EmailAddress, L("Unsuccessful_Payment"), emailTemplate, null);
+        }
+
         public async Task SendNotificationAboutNewProducts(User user, List<LayoutProductWithPreviewUrls> layoutProducts)
         {
-            if (user == null)
-            {
-                throw new UserFriendlyException("The user cannot be null.");
-            }
+            await CheckMailSettingsAnduserEmail(user);
 
             if (!layoutProducts.Any())
             {
                 throw new UserFriendlyException("For mailing it is necessary to submit a list of products.");
-            }
-
-            await CheckMailSettingsEmptyOrNull();
-            if (user.EmailConfirmationCode.IsNullOrEmpty())
-            {
-                throw new UserFriendlyException("EmailConfirmationCode should be set in order to send email activation link.");
-            }
+            }            
 
             var productItems = layoutProducts.Select(f => f.LayoutProduct.Name).ToList();
             var subTitle = $"{string.Join(", ", productItems)}.";
@@ -444,6 +483,25 @@ namespace layoutlovers.Authorization.Users
             emailTemplate.Replace("{EMAIL_FOOTER}", emailFooter.ToString());
 
             await ReplaceBodyAndSend(user.EmailAddress, L("Thanks_NewProduct_Subject"), emailTemplate, mailMessage);
+        }
+
+        public async Task SendNotificationNewRegistrationSucceed(User user, SubscriptionPayment subscriptionPayment)
+        {
+            await CheckMailSettingsAnduserEmail(user);
+
+            var emailTemplate = GetTemplate("layoutlovers.Net.Emailing.EmailTemplates.Membership.membershipOrder.html"
+                , L("Thanks_For_Your_Order")
+                , L("EMAIL_SUB_TITLE_Thanks_Purchase", subscriptionPayment.Id, subscriptionPayment.CreationTime.ToString("dd MMMM yyyy")));
+
+            var editionDisplayName = subscriptionPayment.Edition.DisplayName;
+
+            emailTemplate.Replace("{MEMBERSHIP_NAME}", editionDisplayName);
+            emailTemplate.Replace("{AMOUNT_MEMBERSHIP}", $"${subscriptionPayment.Amount}");
+            emailTemplate.Replace("{PERIOND_OF_SUBSCRIPTIONS}", L("PerMonth"));
+            emailTemplate.Replace("{FOOTER_NOTIFICATION_TEXT}", L("Email_Membership_Footer"));
+            emailTemplate.Replace("{EMAIL_BUTTON_NAME}", L("Email_Membership_Button"));
+
+            await ReplaceBodyAndSend(user.EmailAddress, L("Thanks_For_Your_Order"), emailTemplate, null);
         }
 
         private StringBuilder GetTemplate(string filePath, string title = null, string subTitle = null)
@@ -496,6 +554,20 @@ namespace layoutlovers.Authorization.Users
                 Body = emailTemplate.ToString(),
                 IsBodyHtml = true
             });
+        }
+
+        private async Task CheckMailSettingsAnduserEmail(User user)
+        {
+            if (user == null)
+            {
+                throw new UserFriendlyException("The user cannot be null.");
+            }
+
+            await CheckMailSettingsEmptyOrNull();
+            if (user.EmailConfirmationCode.IsNullOrEmpty())
+            {
+                throw new UserFriendlyException("EmailConfirmationCode should be set in order to send email activation link.");
+            }
         }
 
         /// <summary>

@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Abp.Domain.Uow;
 using layoutlovers.Authorization.Users.EmailModels;
 using layoutlovers.Chat;
+using layoutlovers.MultiTenancy.Payments;
 using layoutlovers.PurchaseItems;
 using layoutlovers.Purchases;
 
@@ -9,6 +11,9 @@ namespace layoutlovers.Authorization.Users
 {
     public interface IUserEmailer
     {
+        [UnitOfWork]
+        Task SendEmailActivationLink(User user, string link, string plainPassword = null);
+
         /// <summary>
         /// Send email activation link to user's email address.
         /// </summary>
@@ -20,6 +25,8 @@ namespace layoutlovers.Authorization.Users
         Task SendEmailActivationLinkAsync(User user, string link, string plainPassword = null);
         Task SendNotificationAboutNewProducts(User user, List<LayoutProductWithPreviewUrls> layoutProducts);
         Task SendNotificationAboutPurchaseProduct(User user, Purchase purchase, List<PurchaseItem> purchaseItems);
+        Task SendNotificationNewRegistrationSucceed(User user, SubscriptionPayment subscriptionPayment);
+        Task SendNotificationUnsuccessfulPayment(User user);
         Task SendPasswordResetLink(User user, string link = null);
 
         /// <summary>

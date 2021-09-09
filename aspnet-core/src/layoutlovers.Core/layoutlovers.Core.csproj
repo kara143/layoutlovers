@@ -18,6 +18,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="Net\Emailing\EmailTemplates\footerTemplate.html" />
+    <None Remove="Net\Emailing\EmailTemplates\Membership\membershipOrder.html" />
+    <None Remove="Net\Emailing\EmailTemplates\Membership\unsuccessfulPayment.html" />
     <None Remove="Net\Emailing\EmailTemplates\newProductsTemplate.html" />
     <None Remove="Net\Emailing\EmailTemplates\NewProducts\newProductsTemplateLi.html" />
     <None Remove="Net\Emailing\EmailTemplates\purchaseTemplate.html" />
@@ -26,6 +28,8 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Net\Emailing\EmailTemplates\footerTemplate.html" />
+    <EmbeddedResource Include="Net\Emailing\EmailTemplates\Membership\membershipOrder.html" />
+    <EmbeddedResource Include="Net\Emailing\EmailTemplates\Membership\unsuccessfulPayment.html" />
     <EmbeddedResource Include="Net\Emailing\EmailTemplates\NewProducts\newProductsTemplate.html" />
     <EmbeddedResource Include="Net\Emailing\EmailTemplates\NewProducts\newProductsTemplateLi.html" />
     <EmbeddedResource Include="Net\Emailing\EmailTemplates\purchaseTemplate.html" />

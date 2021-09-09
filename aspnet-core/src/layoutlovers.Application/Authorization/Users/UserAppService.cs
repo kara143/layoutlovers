@@ -307,7 +307,7 @@ namespace layoutlovers.Authorization.Users
             if (input.SendActivationEmail)
             {
                 user.SetNewEmailConfirmationCode();
-                await _userEmailer.SendEmailActivationLinkAsync(
+                await _userEmailer.SendEmailActivationLink(
                     user,
                     AppUrlService.CreateEmailActivationUrlFormat(AbpSession.TenantId),
                     input.User.Password
@@ -368,7 +368,7 @@ namespace layoutlovers.Authorization.Users
             if (input.SendActivationEmail)
             {
                 user.SetNewEmailConfirmationCode();
-                await _userEmailer.SendEmailActivationLinkAsync(
+                await _userEmailer.SendEmailActivationLink(
                     user,
                     AppUrlService.CreateEmailActivationUrlFormat(AbpSession.TenantId),
                     input.User.Password

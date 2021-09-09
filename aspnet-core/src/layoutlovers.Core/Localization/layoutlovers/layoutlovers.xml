@@ -57,7 +57,8 @@
     <text name="Logout">Logout</text>
     <text name="Reset">Reset</text>
     <text name="Reset_Password">RESET PASSWORD</text>
-    <text name="DidNot_Reset_Password">Didn’t request to reset your password?</text>
+      <text name="DidNot_Reset_Password">Didn’t request to reset your password?</text>
+      <text name="DidNot_Reset_Password_Us">Didn’t register with us?</text>
     <text name="Contact_Support">Contact Support.</text>
     <text name="ResetPermissionsTooltip">This button immediately resets user specific permission settings and saves changes. The user will only have permissions from assigned roles.</text>
     <text name="ResetSuccessfully">Reset successfully</text>
@@ -114,12 +115,13 @@
     <text name="PasswordResetEmail_ClickTheLinkBelowToResetYourPassword">Please click the link below to reset your password:</text>
     <text name="EmailActivation_Subject">layoutlovers account email activation</text>
     <text name="EmailActivation_Title">Welcome to layoutlovers.</text>
+    <text name="Confirm_Your_Account">Confirm Your Account</text>
     <text name="Email_Title_Thanks_Purchase">Thanks for your purchase!</text>
     <text name="EMAIL_SUB_TITLE_Thanks_Purchase">Order #{0} from {1}</text>
 
     <text name="Email_Title_New_Product">Hi {0}, check our new products!</text>
     
-    <text name="EmailActivation_SubTitle">This email is sent you to verify your email.</text>
+    <text name="EmailActivation_SubTitle">Click the button below to confirm your email and complete the account setup.</text>
     <text name="EmailActivation_ClickTheLinkBelowToVerifyYourEmail">Please click the link below to verify your email address:</text>
     <text name="InvalidEmailAddress">Invalid email address</text>
     <text name="InvalidPasswordResetCode">Invalid password reset code</text>
@@ -668,6 +670,7 @@
     <text name="SmsVerificationEnabled">Phone number verification enabled (via SMS)</text>
     <text name="SmsVerificationMessage">Your verification code: {0}</text>
     <text name="Verify">Verify</text>
+    <text name="Email_Confirm_Button">CONFIRM</text>
     <text name="YourCode">Your Code</text>
     <text name="VerifyYourCode">Verify Your Code</text>
     <text name="YourPhoneNumberIsVerified">Your phone number is verified</text>
@@ -1133,5 +1136,12 @@
     <text name="CurrentFile">Current File</text>
     <text name="Dashboard_NoPageDefined_Warning">There is no page defined for this dashboard. Please switch to edit mode and add a page!</text>
     <text name="Filter">Filter</text>
+    <text name="Thanks_For_Your_Order">Thanks for your order!</text>
+    <text name="Email_Membership_Footer">You will be billed each month on the same day until you cancel.</text>
+    <text name="Email_Membership_Button">VIEW ACCOUNT</text>
+    <text name="Unsuccessful_Payment">Unsuccessful Payment</text>
+    <text name="Unsuccessful_Payment_SubTitle">Looks like the credit card we have on file needs to be updated. You will not have the ability to download products until the payment goes through.</text>
+    <text name="Unsuccessful_Payment_Button">UPDATE PAYMENT INFORMATION</text>
+      <text name="Need_Help">Need help?</text>
   </texts>
 </localizationDictionary>
