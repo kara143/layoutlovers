@@ -1,4 +1,5 @@
 ﻿using Abp.Dependency;
+using System;
 
 namespace layoutlovers.Amazon
 {
@@ -9,5 +10,7 @@ namespace layoutlovers.Amazon
         string AwsSecretAccessKey { get; }
         string ThumbnailImages { get; }
         string FileTypes { get; }
+
+        string GetPreviewUrl(Guid layoutProductId, string s3FileName);
     }
 }

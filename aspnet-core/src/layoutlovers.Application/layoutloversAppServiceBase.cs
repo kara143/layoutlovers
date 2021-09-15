@@ -7,6 +7,7 @@ using Abp.Threading;
 using Microsoft.AspNetCore.Identity;
 using layoutlovers.Authorization.Users;
 using layoutlovers.MultiTenancy;
+using Abp.UI;
 
 namespace layoutlovers
 {
@@ -29,7 +30,7 @@ namespace layoutlovers
             var user = await UserManager.FindByIdAsync(AbpSession.GetUserId().ToString());
             if (user == null)
             {
-                throw new Exception("There is no current user!");
+                throw new UserFriendlyException("There is no current user!");
             }
 
             return user;

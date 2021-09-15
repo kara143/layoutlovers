@@ -1,5 +1,6 @@
 ﻿using layoutlovers.Configuration;
 using Microsoft.Extensions.Configuration;
+using System;
 
 namespace layoutlovers.Amazon
 {
@@ -15,6 +16,17 @@ namespace layoutlovers.Amazon
         public AmazonS3Configuration(IAppConfigurationAccessor configurationAccessor)
         {
             _appConfiguration = configurationAccessor.Configuration;
+        }
+
+        public string GetPreviewUrl(Guid layoutProductId, string s3FileName)
+        {
+            var previewUrl = string.Format(ThumbnailImages
+                    , BucketName
+                    , Region
+                    , layoutProductId
+                    , s3FileName);
+
+            return previewUrl;
         }
     }
 }

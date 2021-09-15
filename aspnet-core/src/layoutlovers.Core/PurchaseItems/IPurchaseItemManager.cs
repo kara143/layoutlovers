@@ -9,6 +9,7 @@ namespace layoutlovers.PurchaseItems
     {
         IQueryable<PurchaseItem> GetAllByUserId(long userId);
         IQueryable<LayoutProduct> GetAllPurchasedProductByUserId(long id);
+        IQueryable<LayoutProduct> GetPurchasedProductsByUserId(long id);
         Task<bool> IsBought(Guid productId, long userId);
     }
 }

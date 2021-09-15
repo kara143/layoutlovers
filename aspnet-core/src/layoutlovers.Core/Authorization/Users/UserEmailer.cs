@@ -546,6 +546,10 @@ namespace layoutlovers.Authorization.Users
             {
                 emailTemplate.Replace("{EMAIL_BODY}", mailMessage.ToString());
             }
+            else
+            {
+                emailTemplate.Replace("{EMAIL_BODY}", "");
+            }
 
             await _emailSender.SendAsync(new MailMessage
             {

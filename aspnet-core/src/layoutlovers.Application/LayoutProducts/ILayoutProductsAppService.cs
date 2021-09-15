@@ -1,6 +1,7 @@
 ﻿using Abp.Application.Services;
 using Abp.Application.Services.Dto;
 using layoutlovers.LayoutProducts.Dto;
+using layoutlovers.LayoutProducts.Models;
 using layoutlovers.MultiTenancy.Payments.Stripe.Dto;
 using layoutlovers.Purchases.Dto;
 using System;
@@ -16,5 +17,6 @@ namespace layoutlovers.LayoutProducts
         Task<PagedResultDto<LayoutProductDto>> GetProducts(GetLayoutProductsInput input);
         Task<LayoutProductDto> Update(UpdateLayoutProductDto input);
         Task<PurchaseDto> BuyProduct(BuyProductCard buyProductCard);
+        Task<PagedResultDto<LayoutProductDto>> GetShoppingHistoryProducts(GetShoppingHistory input);
     }
 }

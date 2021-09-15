@@ -21,6 +21,8 @@ using layoutlovers.Purchases.Dto;
 using layoutlovers.PurchaseItems;
 using Abp.UI;
 using layoutlovers.Authorization.Users;
+using layoutlovers.DownloadAmazonS3Files;
+using layoutlovers.LayoutProducts.Models;
 
 namespace layoutlovers.LayoutProducts
 {
@@ -35,6 +37,9 @@ namespace layoutlovers.LayoutProducts
         private readonly IPurchaseManager _purchaseManager;
         private readonly IPurchaseItemManager _purchaseItemManager;
         private readonly IUserEmailer _userEmailer;
+        private readonly IDownloadAmazonS3FileManager _downloadAmazonS3FileManager;
+        private readonly AmazonS3Configuration _amazonS3Configuration;
+
         public LayoutProductsAppService(ILayoutProductManager layoutProductManager
             , IFilterTagManager filterTagManager
             , IProductFilterTagManager productFilterTagManager
@@ -43,6 +48,8 @@ namespace layoutlovers.LayoutProducts
             , IPurchaseManager purchaseManager
             , IPurchaseItemManager purchaseItemManager
             , IUserEmailer userEmailer
+            , IDownloadAmazonS3FileManager downloadAmazonS3FileManager
+            , AmazonS3Configuration amazonS3Configuration
             )
         {
             _productFilterTagManager = productFilterTagManager;
@@ -53,6 +60,8 @@ namespace layoutlovers.LayoutProducts
             _purchaseManager = purchaseManager;
             _purchaseItemManager = purchaseItemManager;
             _userEmailer = userEmailer;
+            _downloadAmazonS3FileManager = downloadAmazonS3FileManager;
+            _amazonS3Configuration = amazonS3Configuration;
         }
 
         public async Task<LayoutProductDto> Create(CreateLayoutProductDto input)
@@ -189,7 +198,7 @@ namespace layoutlovers.LayoutProducts
 
         public async Task<PagedResultDto<LayoutProductDto>> GetProducts(GetLayoutProductsInput input)
         {
-            var query = _layoutProductManager.GetAllIncluding(f => f.PurchaseItems);
+            var query = _layoutProductManager.GetAllIncluding(f => f.PurchaseItems, f => f.AmazonS3Files);
             query = Filtering(input, query);
 
             var productCount = query.Count();
@@ -207,16 +216,64 @@ namespace layoutlovers.LayoutProducts
                 .Select(f => f.Id)
                 .ToList();
 
-            var result = productListDtos.Select((product, i) =>
+            productListDtos.Select((product, i) =>
             {
+                product.AmazonS3Files.Where(f => f.IsImage)
+                .Select((s3File, index) =>
+                {
+                    return s3File.PreviewUrl = _amazonS3Configuration.GetPreviewUrl(s3File.LayoutProductId , s3File.Name);
+                }).ToList();
                 product.IsPurchased = purchasedProductIds.Any(i => i == product.Id);
                 return product;
             }).ToList();
 
             return new PagedResultDto<LayoutProductDto>(
                 productCount,
-                result
+                productListDtos
             );
+        }
+
+        public async Task<PagedResultDto<LayoutProductDto>> GetShoppingHistoryProducts(GetShoppingHistory input)
+        {
+            var user = await GetCurrentUserAsync();
+            var query = GetProductsForShoppingHistory(user, input);
+
+            var productCount = query.Count();
+
+            var resultProducts = await query
+                .PageBy(input)
+                .ToListAsync();
+
+            var productListDtos = ObjectMapper.Map<List<LayoutProductDto>>(resultProducts);
+
+            return new PagedResultDto<LayoutProductDto>(
+                productCount,
+                productListDtos
+            );
+        }
+
+        private IQueryable<LayoutProduct> GetProductsForShoppingHistory(User user, GetShoppingHistory input)
+        {
+            IQueryable<LayoutProduct> query = null;
+
+            switch (input.ShoppingHistoryType)
+            {
+                case ShoppingHistoryType.Purchased:
+                    query = _purchaseItemManager.GetPurchasedProductsByUserId(user.Id);
+                    break;
+                case ShoppingHistoryType.Subscription:
+                    query = _downloadAmazonS3FileManager.DownloadDuringSubscriptionByUserId(user.Id)
+                        .Where(f => f.LayoutProductType != LayoutProductType.Free);
+                    break;
+                case ShoppingHistoryType.Freeware:
+                    query = _downloadAmazonS3FileManager.DownloadDuringSubscriptionByUserId(user.Id)
+                        .Where(f => f.LayoutProductType == LayoutProductType.Free);
+                    break;
+                default:
+                    throw new UserFriendlyException($"This type: {input.ShoppingHistoryType} is not currently supported.");
+            }
+
+            return query;
         }
 
         private IQueryable<LayoutProduct> Filtering(GetLayoutProductsInput input, IQueryable<LayoutProduct> products)
@@ -323,7 +380,7 @@ namespace layoutlovers.LayoutProducts
             }
 
             var purchaseItems = purchase.PurchaseItems.ToList();
-             //We send a message about the purchase.
+            //We send a message about the purchase.
             await _userEmailer.SendNotificationAboutPurchaseProduct(user, purchase, purchaseItems);
             return purchaseDto;
         }

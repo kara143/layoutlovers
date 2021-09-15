@@ -1,14 +1,14 @@
 ﻿using Abp.Domain.Repositories;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace layoutlovers.LayoutProducts
 {
     public class LayoutProductManager : AppManagerBase<LayoutProduct, Guid>, ILayoutProductManager
-    {
-        public LayoutProductManager(IRepository<LayoutProduct, Guid> repository) : base(repository)
+    {        
+        public LayoutProductManager(IRepository<LayoutProduct, Guid> repository
+            ) : base(repository)
         {
         }
 
