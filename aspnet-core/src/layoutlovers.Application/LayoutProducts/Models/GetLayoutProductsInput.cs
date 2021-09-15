@@ -1,9 +1,10 @@
 ﻿using Abp.Runtime.Validation;
 using layoutlovers.Dto;
+using layoutlovers.LayoutProducts.Dto;
 using System;
 using System.Collections.Generic;
 
-namespace layoutlovers.LayoutProducts.Dto
+namespace layoutlovers.LayoutProducts.Models
 {
     public class GetLayoutProductsInput : PagedAndSortedInputDto, IShouldNormalize, IGetLayoutProductInput
     {

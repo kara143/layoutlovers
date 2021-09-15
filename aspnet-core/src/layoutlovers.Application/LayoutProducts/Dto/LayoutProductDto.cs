@@ -12,7 +12,7 @@ namespace layoutlovers.LayoutProducts.Dto
     {
         public bool IsPurchased { get; set; }
         public CategoryDto Category { get; set; }
-        public IEnumerable<S3FileDtoBase> AmazonS3Files { set; get; }
+        public IEnumerable<S3ImageDto> AmazonS3Files { set; get; }
         public IEnumerable<FilterTagDto> FilterTagDtos { get; set; }
     }
 }

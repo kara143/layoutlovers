@@ -242,6 +242,29 @@ namespace layoutlovers.MultiTenancy.Payments
             }
         }
 
+        private async Task<User> GetUserByPaymentId(SubscriptionPayment payment)
+        {
+            var sessionId = await _subscriptionPaymentExtensionDataRepository.GetExtensionDataAsync(payment.Id,
+               StripeGatewayManager.StripeSessionIdSubscriptionPaymentExtensionDataKey);
+
+            var customerService = new CustomerService();
+            var sessionService = new SessionService();
+            var session = await sessionService.GetAsync(sessionId);
+
+            if (string.IsNullOrWhiteSpace(session.CustomerDetails.Email))
+            {
+                throw new UserFriendlyException("Customer details don't have email.");
+            }
+
+            var user = _userRepository.GetAll().FirstOrDefault(f => f.EmailAddress == session.CustomerDetails.Email);
+            if (user.IsNull())
+            {
+                throw new UserFriendlyException($"No users were found for the tenent with ID {payment.TenantId}!");
+            }
+
+            return user;
+        }
+
         public async Task UpgradeSucceed(long paymentId)
         {
             var payment = await _subscriptionPaymentRepository.GetAsync(paymentId);
@@ -286,6 +309,12 @@ namespace layoutlovers.MultiTenancy.Payments
         {
             var payment = await _subscriptionPaymentRepository.GetAsync(paymentId);
             payment.SetAsFailed();
+
+            using (_unitOfWorkManager.Current.SetTenantId(payment.TenantId))
+            {
+                var user = await GetUserByPaymentId(payment);
+                await _userEmailer.SendNotificationUnsuccessfulPayment(user);
+            }
         }
 
         private async Task<decimal> CalculateAmountForPaymentAsync(SubscribableEdition targetEdition, PaymentPeriodType? periodType, EditionPaymentType editionPaymentType, Tenant tenant)

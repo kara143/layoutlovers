@@ -78,16 +78,14 @@ namespace layoutlovers.Web.Startup
                 options.AddPolicy(DefaultCorsPolicyName, builder =>
                 {
                     //App:CorsOrigins in appsettings.json can contain more than one address with splitted by comma.
-                    //builder
-                    //    .WithOrigins(
-                    //        // App:CorsOrigins in appsettings.json can contain more than one address separated by comma.
-                    //        _appConfiguration["App:CorsOrigins"]
-                    //            .Split(",", StringSplitOptions.RemoveEmptyEntries)
-                    //            .Select(o => o.RemovePostFix("/"))
-                    //            .ToArray()
-                    //    )
-                        builder.WithOrigins()
-                    .AllowAnyOrigin()
+                    builder
+                        .WithOrigins(
+                            // App:CorsOrigins in appsettings.json can contain more than one address separated by comma.
+                            _appConfiguration["App:CorsOrigins"]
+                                .Split(",", StringSplitOptions.RemoveEmptyEntries)
+                                .Select(o => o.RemovePostFix("/"))
+                                .ToArray()
+                        )
                         .SetIsOriginAllowedToAllowWildcardSubdomains()
                         .AllowAnyHeader()
                         .AllowAnyMethod()
@@ -204,8 +202,7 @@ namespace layoutlovers.Web.Startup
             app.UseStaticFiles();
             app.UseRouting();
 
-            //app.UseCors(DefaultCorsPolicyName); //Enable CORS!
-            app.UseCors();
+            app.UseCors(DefaultCorsPolicyName); //Enable CORS!
 
             app.UseAuthentication();
             app.UseJwtTokenMiddleware();
@@ -260,7 +257,7 @@ namespace layoutlovers.Web.Startup
 
                 endpoints.MapControllerRoute("defaultWithArea", "{area}/{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
-
+                //endpoints.MapControllers().RequireCors(DefaultCorsPolicyName);
                 if (bool.Parse(_appConfiguration["HealthChecks:HealthChecksEnabled"]))
                 {
                     endpoints.MapHealthChecks("/health", new HealthCheckOptions()

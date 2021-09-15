@@ -57,15 +57,15 @@ namespace layoutlovers
 
         public async Task<IEnumerable<TEntity>> InsertRangeAndGetEntitisAsync(IEnumerable<TEntity> entities)
         {
-            var rezult = new List<TEntity>();
+            var result = new List<TEntity>();
             foreach (var entity in entities)
             {
                 var ent = await _repository.InsertAsync(entity);
-                rezult.Add(ent);
+                result.Add(ent);
             }
 
             await CurrentUnitOfWork.SaveChangesAsync();
-            return rezult;
+            return result;
         }
 
         public async Task<List<TEntity>> GetAllListAsync()

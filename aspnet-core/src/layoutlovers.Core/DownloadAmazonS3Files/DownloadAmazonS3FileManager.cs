@@ -22,12 +22,14 @@ namespace layoutlovers.DownloadAmazonS3Files
         private readonly IPurchaseItemManager _purchaseManager;
         private readonly IAmazonS3Manager _amazonS3Manager;
         private readonly EditionManager _editionManager;
+        IRepository<LayoutProduct, Guid> _layoutProductRepository;
         public DownloadAmazonS3FileManager(IRepository<DownloadAmazonS3File, Guid> repository
             , UserManager userManager
             , IDownloadRestrictionManager downloadRestrictionManager
             , IPurchaseItemManager purchaseManager
             , IAmazonS3Manager amazonS3Manager
             , EditionManager editionManager
+            , IRepository<LayoutProduct, Guid> layoutProductRepository
             ) : base(repository)
         {
             _userManager = userManager;
@@ -35,6 +37,7 @@ namespace layoutlovers.DownloadAmazonS3Files
             _purchaseManager = purchaseManager;
             _amazonS3Manager = amazonS3Manager;
             _editionManager = editionManager;
+            _layoutProductRepository = layoutProductRepository;
         }
 
         /// <summary>
@@ -172,6 +175,22 @@ namespace layoutlovers.DownloadAmazonS3Files
                 .GroupBy(f => f.Id)
                 .Select(f => f.First())
                 .ToList();
+
+            return products;
+        }
+
+        public IQueryable<LayoutProduct> DownloadDuringSubscriptionByUserId(long id)
+        {
+            var productIds = _repository.GetAllIncluding(f => f.AmazonS3File, a => a.AmazonS3File.LayoutProduct)
+                 .Where(f => f.UserId == id)
+                 .Select(f => f.AmazonS3File)
+                 .Select(f => f.LayoutProduct)
+                 .Select(f => f.Id)
+                 .Distinct()
+                 .ToList();
+            //dosnload products
+            var products = _layoutProductRepository.GetAll()
+                .Where(f => productIds.Contains(f.Id));
 
             return products;
         }
