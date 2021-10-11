@@ -195,42 +195,60 @@ namespace layoutlovers.LayoutProducts
 
             await _layoutProductManager.DeleteAsync(id);
         }
-
+        [AbpAllowAnonymous]
         public async Task<PagedResultDto<LayoutProductDto>> GetProducts(GetLayoutProductsInput input)
         {
-            var query = _layoutProductManager.GetAllIncluding(f => f.PurchaseItems, f => f.AmazonS3Files);
-            query = Filtering(input, query);
-
-            var productCount = query.Count();
-
-            var products = await query
-                .PageBy(input)
-                .ToListAsync();
-
-            var productListDtos = ObjectMapper.Map<List<LayoutProductDto>>(products);
-
-            var user = await GetCurrentUserAsync();
-
-            //Purchased products by the current user
-            var purchasedProductIds = _purchaseItemManager.GetAllPurchasedProductByUserId(user.Id)
-                .Select(f => f.Id)
-                .ToList();
-
-            productListDtos.Select((product, i) =>
+            try
             {
-                product.AmazonS3Files.Where(f => f.IsImage)
-                .Select((s3File, index) =>
-                {
-                    return s3File.PreviewUrl = _amazonS3Configuration.GetPreviewUrl(s3File.LayoutProductId , s3File.Name);
-                }).ToList();
-                product.IsPurchased = purchasedProductIds.Any(i => i == product.Id);
-                return product;
-            }).ToList();
+                var query = _layoutProductManager.GetAllIncluding(f => f.PurchaseItems, f => f.AmazonS3Files);
+                query = Filtering(input, query);
 
-            return new PagedResultDto<LayoutProductDto>(
-                productCount,
-                productListDtos
-            );
+                var productCount = query.Count();
+
+                var products = await query
+                    .PageBy(input)
+                    .ToListAsync();
+
+                var productListDtos = ObjectMapper.Map<List<LayoutProductDto>>(products);
+
+                productListDtos.Select((product, i) =>
+                {
+                    product.AmazonS3Files.Where(f => f.IsImage)
+                    .Select((s3File, index) =>
+                    {
+                        return s3File.PreviewUrl = _amazonS3Configuration.GetPreviewUrl(s3File.LayoutProductId, s3File.Name);
+                    }).ToList();
+                    return product;
+                }).ToList();
+
+                //If the user is logged in, then check whether the product was purchased.
+                var userId = AbpSession.UserId;
+                if (userId != null)
+                {
+                    var user = await UserManager.FindByIdAsync(userId.ToString());
+
+                    //Purchased products by the current user
+                    var purchasedProductIds = _purchaseItemManager.GetAllPurchasedProductByUserId(user.Id)
+                        .Select(f => f.Id)
+                        .ToList();
+
+                    productListDtos.Select((product, i) =>
+                    {
+                        product.IsPurchased = purchasedProductIds.Any(i => i == product.Id);
+                        return product;
+                    }).ToList();
+                }
+
+                return new PagedResultDto<LayoutProductDto>(
+                    productCount,
+                    productListDtos
+                );
+
+            }
+            catch (Exception ex)
+            {
+                throw new UserFriendlyException(ex.Message);
+            }
         }
 
         public async Task<PagedResultDto<LayoutProductDto>> GetShoppingHistoryProducts(GetShoppingHistory input)

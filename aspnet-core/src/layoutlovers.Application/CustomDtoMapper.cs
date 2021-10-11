@@ -31,6 +31,8 @@ using layoutlovers.Chat.Dto;
 using layoutlovers.DynamicEntityProperties.Dto;
 using layoutlovers.Editions;
 using layoutlovers.Editions.Dto;
+using layoutlovers.Favorites;
+using layoutlovers.Favorites.Dto;
 using layoutlovers.Files.Dto;
 using layoutlovers.FilterTags;
 using layoutlovers.FilterTags.Dto;
@@ -87,8 +89,16 @@ namespace layoutlovers
             configuration.CreateMap<Role, RoleListDto>();
             configuration.CreateMap<UserRole, UserListRoleDto>();
 
-            configuration.CreateMap<FilterTag, FilterTagDto>();
-            configuration.CreateMap<FilterTagDto, FilterTag>();
+            configuration.CreateMap<FilterTag, FilterTagDto>()
+                .ForMember(dto => dto.Name, opt => opt.MapFrom(ent => ent.Name))
+                .ForMember(dto => dto.Id, opt => opt.MapFrom(ent => ent.Id));
+
+            configuration.CreateMap<FilterTagDto, FilterTag>()
+                .ForMember(dto => dto.Id, opt => opt.MapFrom(ent => ent.Id))
+                .ForMember(dto => dto.Name, opt => opt.MapFrom(ent => ent.Name));
+
+            configuration.CreateMap<CreateFilterTagDto, FilterTag>()
+                .ForMember(dto => dto.Name, opt => opt.MapFrom(ent => ent.Name));
 
             configuration.CreateMap<Category, CategoryDto>();
             configuration.CreateMap<BuyProductCard, PaymentCardDto>();
@@ -102,6 +112,12 @@ namespace layoutlovers
 
             configuration.CreateMap<AmazonS3File, S3ImageDto>();
             configuration.CreateMap<AmazonS3File, S3FileDto>();
+            
+            configuration.CreateMap<FavoriteDto, Favorite>();
+            configuration.CreateMap<Favorite, FavoriteDto>();
+            configuration.CreateMap<CreateFavoriteDto, Favorite>();
+            configuration.CreateMap<UpdateFavoriteDto, Favorite>();
+            
 
             configuration.CreateMap<LayoutProduct, LayoutProductDto>()
                 .ForMember(dto => dto.Category, opt => opt.MapFrom(ent => ent.Category))
