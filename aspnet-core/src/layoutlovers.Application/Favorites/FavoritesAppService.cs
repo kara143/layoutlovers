@@ -9,9 +9,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Linq.Dynamic.Core;
+using Abp.UI;
+using Abp.Authorization;
+using layoutlovers.Favorites.Models;
 
 namespace layoutlovers.Favorites
 {
+    [AbpAuthorize]
     public class FavoritesAppService :
         CrudAppServiceBase<Favorite
             , FavoriteDto
@@ -24,26 +28,34 @@ namespace layoutlovers.Favorites
         {
         }
 
-        public async Task<PagedResultDto<FavoriteDto>> GetAllOfCurrentUserAsync(PagedAndSortedResultRequestDto input)
+        public async Task<PagedResultDto<FavoriteDto>> GetAllOfCurrentUserAsync(GetFavoritesInput input)
         {
-            var userId = AbpSession.GetUserId();
+            try
+            {
+                var userId = AbpSession.GetUserId();
 
-            var query = Repository.GetAll()
-                .Where(f => f.UserId == userId);
+                var query = Repository.GetAll()
+                    .Where(f => f.UserId == userId);
 
-            var favoriteCount = query.Count();
+                var favoriteCount = query.Count();
 
-            var favorites = await query
-                .OrderBy(input.Sorting)
-                .PageBy(input)
-                .ToListAsync();
+                var favorites = await query
+                    .OrderBy(input.Sorting)
+                    .PageBy(input)
+                    .ToListAsync();
 
-            var favoriteListDto = ObjectMapper.Map<List<FavoriteDto>>(favorites);
+                var favoriteListDto = ObjectMapper.Map<List<FavoriteDto>>(favorites);
 
-            return new PagedResultDto<FavoriteDto>(
-                favoriteCount,
-                favoriteListDto
-            );
+                return new PagedResultDto<FavoriteDto>(
+                    favoriteCount,
+                    favoriteListDto
+                );
+            }
+            catch (Exception ex)
+            {
+
+                throw new UserFriendlyException(ex.Message);
+            }            
         }
     }
 }
