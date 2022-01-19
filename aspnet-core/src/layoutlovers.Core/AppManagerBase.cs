@@ -105,5 +105,12 @@ namespace layoutlovers
         {
             return _repository.FirstOrDefaultAsync(predicate);
         }
+
+        public async Task<TPrimaryKey> InsertAndGetIdAsync(TEntity entity)
+        {
+            var entityId = await _repository.InsertAndGetIdAsync(entity);
+            await CurrentUnitOfWork.SaveChangesAsync();
+            return entityId;
+        }
     }
 }

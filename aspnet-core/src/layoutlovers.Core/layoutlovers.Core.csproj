@@ -57,6 +57,7 @@
     <PackageReference Include="Twilio" Version="5.54.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\layoutlovers.Application.Shared\layoutlovers.Application.Shared.csproj" />
     <ProjectReference Include="..\layoutlovers.Core.Shared\layoutlovers.Core.Shared.csproj" />
   </ItemGroup>
 </Project>

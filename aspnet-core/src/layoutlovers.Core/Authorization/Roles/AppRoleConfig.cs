@@ -30,6 +30,15 @@ namespace layoutlovers.Authorization.Roles
                     StaticRoleNames.Tenants.User,
                     MultiTenancySides.Tenant)
                 );
+
+            var subscriptionManager = new StaticRoleDefinition(
+                    StaticRoleNames.Tenants.SubscriptionManager,
+                    MultiTenancySides.Tenant)
+            {
+                GrantedPermissions = { AppPermissions.Pages_Administration_Tenant_SubscriptionManagement }
+            };
+
+            roleManagementConfig.StaticRoles.Add(subscriptionManager);
         }
     }
 }

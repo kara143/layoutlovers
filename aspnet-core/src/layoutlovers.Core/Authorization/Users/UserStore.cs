@@ -4,6 +4,7 @@ using Abp.Domain.Uow;
 using Abp.Linq;
 using Abp.Organizations;
 using layoutlovers.Authorization.Roles;
+using System.Threading;
 
 namespace layoutlovers.Authorization.Users
 {
@@ -12,6 +13,7 @@ namespace layoutlovers.Authorization.Users
     /// </summary>
     public class UserStore : AbpUserStore<Role, User>
     {
+        private readonly IUnitOfWorkManager _unitOfWorkManager;
         public UserStore(
             IRepository<User, long> userRepository,
             IRepository<UserLogin, long> userLoginRepository,
@@ -33,6 +35,15 @@ namespace layoutlovers.Authorization.Users
                 userOrganizationUnitRepository,
                 organizationUnitRoleRepository)
         {
+            _unitOfWorkManager = unitOfWorkManager;
+        }
+
+        public new virtual User FindById(string userId, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            using (_unitOfWorkManager.Current.DisableFilter(AbpDataFilters.MayHaveTenant))
+            {
+                return base.FindById(userId, cancellationToken);
+            }
         }
     }
 }
