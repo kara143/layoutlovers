@@ -8,6 +8,7 @@ namespace layoutlovers.LayoutProducts.Models
 {
     public class GetLayoutProductsInput : PagedAndSortedInputDto, IShouldNormalize, IGetLayoutProductInput
     {
+        public bool IsFeaturedOnly { get; set; }
         public string Filter { get; set; }
         public Guid? CategoryId { get; set; }
         public SortFilter SortFilter { get; set; }

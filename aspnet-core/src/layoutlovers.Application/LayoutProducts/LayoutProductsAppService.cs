@@ -189,6 +189,16 @@ namespace layoutlovers.LayoutProducts
             return productDto;
         }
 
+        public async Task UpdateFeaturedOrder(IList<UpdateFeaturedOrderInput> updateFeaturedOrders)
+        {
+            foreach (var updateFeaturedOrder in updateFeaturedOrders)
+            {
+                var product = await _layoutProductManager.GetById(updateFeaturedOrder.LayoutProductId);
+                product.FeaturedOrder = updateFeaturedOrder.FeaturedOrder;
+                await _layoutProductManager.InsertOrUpdateAsync(product);
+            }
+        }
+
         public async Task Delete(Guid id)
         {
             await _amazonS3Manager.DleteAllByProductId(id);
@@ -300,7 +310,8 @@ namespace layoutlovers.LayoutProducts
 
             products = products
                 .WhereIf(input.CategoryId.HasValue, f => f.CategoryId == input.CategoryId)
-                .WhereIf(!string.IsNullOrEmpty(filter), f => f.Name.ToLower().Contains(filter));
+                .WhereIf(!string.IsNullOrEmpty(filter), f => f.Name.ToLower().Contains(filter))
+                .WhereIf(input.IsFeaturedOnly, f => f.IsFeatured);
 
             //If there is at least one occurrence,
             //also sort by number of matches!
@@ -342,6 +353,12 @@ namespace layoutlovers.LayoutProducts
                     })
                         .OrderBy(f => f.Count)
                         .Select(f => f.Product);
+                case SortFilter.FeaturedOrder:
+                    if (!input.IsFeaturedOnly)
+                    {
+                        throw new UserFriendlyException($"This type: {input.SortFilter} is supported only for featured.");
+                    }
+                    return products.OrderBy(f => f.FeaturedOrder);
                 default:
                     throw new UserFriendlyException($"This type: {input.SortFilter} is not supported.");
             }
