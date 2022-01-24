@@ -1,20 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Abp.Authorization.Users;
+﻿using Abp.Authorization.Users;
 using Abp.Configuration;
 using Abp.IdentityFramework;
 using Abp.Linq;
 using Abp.Notifications;
 using Abp.Runtime.Session;
 using Abp.UI;
-using Microsoft.AspNetCore.Identity;
 using layoutlovers.Authorization.Roles;
 using layoutlovers.Configuration;
-using layoutlovers.Debugging;
+using layoutlovers.Editions;
 using layoutlovers.MultiTenancy;
 using layoutlovers.Notifications;
+using Microsoft.AspNetCore.Identity;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace layoutlovers.Authorization.Users
 {
@@ -26,6 +26,7 @@ namespace layoutlovers.Authorization.Users
         private readonly TenantManager _tenantManager;
         private readonly UserManager _userManager;
         private readonly RoleManager _roleManager;
+        private readonly EditionManager _editionManager;
         private readonly IUserEmailer _userEmailer;
         private readonly INotificationSubscriptionManager _notificationSubscriptionManager;
         private readonly IAppNotifier _appNotifier;
@@ -36,6 +37,7 @@ namespace layoutlovers.Authorization.Users
             TenantManager tenantManager,
             UserManager userManager,
             RoleManager roleManager,
+            EditionManager editionManager,
             IUserEmailer userEmailer,
             INotificationSubscriptionManager notificationSubscriptionManager,
             IAppNotifier appNotifier,
@@ -45,6 +47,7 @@ namespace layoutlovers.Authorization.Users
             _userManager = userManager;
             _roleManager = roleManager;
             _userEmailer = userEmailer;
+            _editionManager = editionManager;
             _notificationSubscriptionManager = notificationSubscriptionManager;
             _appNotifier = appNotifier;
             _userPolicy = userPolicy;
@@ -55,17 +58,17 @@ namespace layoutlovers.Authorization.Users
 
         public async Task<User> RegisterAsync(string name, string surname, string emailAddress, string userName, string plainPassword, bool isEmailConfirmed, string emailActivationLink)
         {
-            CheckForTenant();
             CheckSelfRegistrationIsEnabled();
+            
+            var edition = await _editionManager.FindByNameAsync(EditionManager.DefaultEditionName);
 
-            var tenant = await GetActiveTenantAsync();
+            var tenantId = await _tenantManager.CreateWithOutAdminUserAsync($"tenant_{userName}", name, true, edition.Id);
+
             var isNewRegisteredUserActiveByDefault = await SettingManager.GetSettingValueAsync<bool>(AppSettings.UserManagement.IsNewRegisteredUserActiveByDefault);
-
-            await _userPolicy.CheckMaxUserCountAsync(tenant.Id);
 
             var user = new User
             {
-                TenantId = tenant.Id,
+                TenantId = tenantId,
                 Name = name,
                 Surname = surname,
                 EmailAddress = emailAddress,
@@ -77,13 +80,17 @@ namespace layoutlovers.Authorization.Users
 
             user.SetNormalizedNames();
 
-            var defaultRoles = await AsyncQueryableExecuter.ToListAsync(_roleManager.Roles.Where(r => r.IsDefault));
-            foreach (var defaultRole in defaultRoles)
+            using (CurrentUnitOfWork.SetTenantId(tenantId))
             {
-                user.Roles.Add(new UserRole(tenant.Id, user.Id, defaultRole.Id));
+                var defaultRoles = await AsyncQueryableExecuter.ToListAsync(_roleManager.Roles.Where(r => r.IsDefault));
+            
+                foreach (var defaultRole in defaultRoles)
+                {
+                    user.Roles.Add(new UserRole(tenantId, user.Id, defaultRole.Id));
+                }
             }
 
-            await _userManager.InitializeOptionsAsync(AbpSession.TenantId);
+            await _userManager.InitializeOptionsAsync(tenantId);
             CheckErrors(await _userManager.CreateAsync(user, plainPassword));
             await CurrentUnitOfWork.SaveChangesAsync();
 

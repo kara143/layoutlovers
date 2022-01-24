@@ -22,5 +22,6 @@ namespace layoutlovers
         Task<IEnumerable<TEntity>> InsertRangeAndGetEntitisAsync(IEnumerable<TEntity> entities);
         Task<IEnumerable<TEntity>> GetAllByPredicateAsync(Expression<Func<TEntity, bool>> predicate);
         Task<TEntity> InsertAsync(TEntity entity);
+        Task<TPrimaryKey> InsertAndGetIdAsync(TEntity entity);
     }
 }
