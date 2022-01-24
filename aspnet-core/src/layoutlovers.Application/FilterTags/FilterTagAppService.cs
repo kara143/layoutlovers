@@ -25,9 +25,32 @@ namespace layoutlovers.FilterTags
         {
             var entities = _filterTagManager.GetFilterTagByProductId(id);
 
-            var dtos = ObjectMapper.Map<IEnumerable<FilterTagDto>>(entities);
+            var dtos = MapToDto(entities);
 
             return dtos;
+        }
+
+        public IEnumerable<FilterTagDto> GetAllByCategoryId(Guid id)
+        {
+            var entities = _filterTagManager.GetFilterTagByCategoryId(id);
+
+            var dtos = MapToDto(entities);
+
+            return dtos;
+        }
+
+        public IEnumerable<FilterTagDto> GetAllForFeatured()
+        {
+            var entities = _filterTagManager.GetFilterTagForFeatured();
+
+            var dtos = MapToDto(entities);
+
+            return dtos;
+        }
+
+        private IEnumerable<FilterTagDto> MapToDto(IEnumerable<FilterTag> entities)
+        {
+            return ObjectMapper.Map<IEnumerable<FilterTagDto>>(entities);
         }
     }
 }
