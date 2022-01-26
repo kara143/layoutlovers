@@ -23,6 +23,7 @@ using Abp.UI;
 using layoutlovers.Authorization.Users;
 using layoutlovers.DownloadAmazonS3Files;
 using layoutlovers.LayoutProducts.Models;
+using layoutlovers.FilterTags.Dto;
 
 namespace layoutlovers.LayoutProducts
 {
@@ -63,7 +64,6 @@ namespace layoutlovers.LayoutProducts
             _downloadAmazonS3FileManager = downloadAmazonS3FileManager;
             _amazonS3Configuration = amazonS3Configuration;
         }
-
         public async Task<LayoutProductDto> Create(CreateLayoutProductDto input)
         {
             if (input.LayoutProductType.IsFree() && input.Amount != 0)
@@ -79,7 +79,7 @@ namespace layoutlovers.LayoutProducts
             try
             {
                 var product = ObjectMapper.Map<LayoutProduct>(input);
-                var entity = await _layoutProductManager.InsertAndGetEntityAsync(product);
+                var entityId = await _layoutProductManager.InsertAndGetIdAsync(product);
                 var productFilterTags = ObjectMapper.Map<IEnumerable<FilterTag>>(input.FilterTagDtos);
 
                 var WithTagsWhatWasCreatedEarlier = productFilterTags.Where(f => f.Id != Guid.Empty)
@@ -100,7 +100,13 @@ namespace layoutlovers.LayoutProducts
 
                 await _productFilterTagManager.InsertRange(withNewTags);
 
+                var entity = _layoutProductManager.GetByIdAndIncluding(entityId);
+                var filterTags = _productFilterTagManager.GetFilterTagByProductId(entityId);
+                var filterTagDtos = ObjectMapper.Map<List<FilterTagDto>>(filterTags);
+
+
                 var productDto = ObjectMapper.Map<LayoutProductDto>(entity);
+                productDto.FilterTagDtos = filterTagDtos;
                 return productDto;
             }
             catch (Exception ex)
@@ -109,10 +115,32 @@ namespace layoutlovers.LayoutProducts
             }
         }
 
+        [AbpAllowAnonymous]
         public LayoutProductDto GetByIdAndIncluding(Guid id)
         {
-            var product = _layoutProductManager.GetByIdAndIncluding(id);
+            var product = _layoutProductManager.GetByIdAndIncluding(id)
+;
             var productDto = ObjectMapper.Map<LayoutProductDto>(product);
+
+            foreach (var item in productDto.AmazonS3Files)
+            {
+                if (!item.IsImage)
+                {
+                    continue;
+                }
+
+                item.PreviewUrl = string.Format(_amazonS3Configuration.ThumbnailImages
+                    , _amazonS3Configuration.BucketName
+                    , _amazonS3Configuration.Region
+                    , item.LayoutProductId
+                    , item.Name);
+            }
+
+            var filterTags = _productFilterTagManager.GetFilterTagByProductId(id)
+;
+            var filterTagDtos = ObjectMapper.Map<List<FilterTagDto>>(filterTags);
+            productDto.FilterTagDtos.Clear();
+            productDto.FilterTagDtos = filterTagDtos;
             return productDto;
         }
 
@@ -137,16 +165,30 @@ namespace layoutlovers.LayoutProducts
 
             //Tags that were created earlier and were found by keyword!
             var tagsCreatedEarlier = _filterTagManager.GetAll()
-                .ToList()
-                .FilterIf(tagsWithoutId.IsNotEmpty(), f => tagsWithoutId.Any(t => t.Name == f.Name));
+             .ToList()
+             .FilterIf(tagsWithoutId.IsNotEmpty(), f => tagsWithoutId.Any(t => t.Name == f.Name));
 
             //New tags what we will add to the database!
             var tagsToCreate = tagsWithoutId.WhereIf(tagsCreatedEarlier.IsNotEmpty(), f => tagsCreatedEarlier.Any(t => !t.Name.Equals(f.Name)));
             var tagsToCreateEntities = ObjectMapper.Map<IEnumerable<FilterTag>>(tagsToCreate);
 
             //Tag that will be removed from the product link and tag!
-            var deletedTags = curentProductTags.WhereIf(tagsWithId.IsNotEmpty(), f => !tagsWithId.Any(a => a.Id == f.Id))
-                .ToList();
+            var deletedTags = new List<FilterTag>();
+            var createdBeforeFoundByid = new List<FilterTagDto>();
+
+            if (tagsWithId.IsNotEmpty())
+            {
+                var ids = tagsWithId.Select(a => a.Id).ToList();
+
+                deletedTags = curentProductTags
+                    .Where(a => !ids.Contains(a.Id))
+                    .ToList();
+
+                var curentProductTagIds = curentProductTags.Select(f => f.Id);
+                createdBeforeFoundByid = tagsWithId
+                    .Where(f => !curentProductTagIds.Contains(f.Id))
+                    .ToList();
+            }
 
             if (deletedTags.IsNotEmpty())
             {
@@ -180,12 +222,36 @@ namespace layoutlovers.LayoutProducts
                 FilterTag = tag
             }).ToArray();
 
-            await _productFilterTagManager.InsertRange(productFilterTags);
+            var tagToAdded = createdBeforeFoundByid.Select((tag, index) => new ProductFilterTag
+            {
+                LayoutProductId = input.Id,
+                FilterTagId = tag.Id
+            });
+
+            if (tagToAdded.IsNotEmpty())
+            {
+                await _productFilterTagManager.InsertRange(tagToAdded);
+            }
+
+            if (productFilterTags.IsNotEmpty())
+            {
+                await _productFilterTagManager.InsertRange(productFilterTags);
+            }
+
+            if (input.FilterTagDtos.Count() == 0)
+            {
+                await _productFilterTagManager.CleanFilterTagByProductId(input.Id);
+            }
 
             var product = ObjectMapper.Map<LayoutProduct>(input);
             var entity = await _layoutProductManager.InsertOrUpdateAndGetEntityAsync(product);
-
             var productDto = ObjectMapper.Map<LayoutProductDto>(entity);
+
+            var filterTagResults = _productFilterTagManager.GetFilterTagByProductId(entity.Id);
+            var filterTagDtos = ObjectMapper.Map<List<FilterTagDto>>(filterTagResults);
+
+            productDto.FilterTagDtos = filterTagDtos;
+
             return productDto;
         }
 
@@ -210,7 +276,7 @@ namespace layoutlovers.LayoutProducts
         {
             try
             {
-                var query = _layoutProductManager.GetAllIncluding(f => f.PurchaseItems, f => f.AmazonS3Files);
+                var query = _layoutProductManager.GetAllIncluding(f => f.PurchaseItems, f => f.AmazonS3Files, f => f.ProductFilterTags);
                 query = Filtering(input, query);
 
                 var productCount = query.Count();

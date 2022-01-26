@@ -19,6 +19,7 @@ using layoutlovers.Security.Recaptcha;
 using layoutlovers.Url;
 using layoutlovers.Authorization.Delegation;
 using Abp.Domain.Repositories;
+using Abp.Domain.Uow;
 
 
 namespace layoutlovers.Authorization.Accounts
@@ -131,25 +132,29 @@ namespace layoutlovers.Authorization.Accounts
 
         public async Task<ResetPasswordOutput> ResetPassword(ResetPasswordInput input)
         {
-            var user = await UserManager.GetUserByIdAsync(input.UserId);
-            if (user == null || user.PasswordResetCode.IsNullOrEmpty() || user.PasswordResetCode != input.ResetCode)
+            using (CurrentUnitOfWork.DisableFilter(AbpDataFilters.MustHaveTenant, AbpDataFilters.MayHaveTenant))
             {
-                throw new UserFriendlyException(L("InvalidPasswordResetCode"), L("InvalidPasswordResetCode_Detail"));
+                var user = await UserManager.GetUserByIdAsync(input.UserId);
+            
+                if (user == null || user.PasswordResetCode.IsNullOrEmpty() || user.PasswordResetCode != input.ResetCode)
+                {
+                    throw new UserFriendlyException(L("InvalidPasswordResetCode"), L("InvalidPasswordResetCode_Detail"));
+                }
+
+                await UserManager.InitializeOptionsAsync(user.TenantId);
+                CheckErrors(await UserManager.ChangePasswordAsync(user, input.Password));
+                user.PasswordResetCode = null;
+                user.IsEmailConfirmed = true;
+                user.ShouldChangePasswordOnNextLogin = false;
+
+                await UserManager.UpdateAsync(user);
+
+                return new ResetPasswordOutput
+                {
+                    CanLogin = user.IsActive,
+                    UserName = user.UserName
+                };
             }
-
-            await UserManager.InitializeOptionsAsync(AbpSession.TenantId);
-            CheckErrors(await UserManager.ChangePasswordAsync(user, input.Password));
-            user.PasswordResetCode = null;
-            user.IsEmailConfirmed = true;
-            user.ShouldChangePasswordOnNextLogin = false;
-
-            await UserManager.UpdateAsync(user);
-
-            return new ResetPasswordOutput
-            {
-                CanLogin = user.IsActive,
-                UserName = user.UserName
-            };
         }
 
         public async Task SendEmailActivationLink(SendEmailActivationLinkInput input)

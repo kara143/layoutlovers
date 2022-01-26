@@ -19,6 +19,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using layoutlovers.Authorization.Roles;
 using layoutlovers.Security;
+using Microsoft.EntityFrameworkCore;
 
 namespace layoutlovers.Authorization.Users
 {
@@ -78,7 +79,10 @@ namespace layoutlovers.Authorization.Users
 
         public override Task<User> FindByEmailAsync(string email)
         {
-            return base.FindByEmailAsync(email);
+            using (_unitOfWorkManager.Current.DisableFilter(AbpDataFilters.MayHaveTenant))
+            {
+                return base.FindByEmailAsync(email);
+            }
         }
 
         [UnitOfWork]
@@ -89,6 +93,24 @@ namespace layoutlovers.Authorization.Users
                 return await FindByIdAsync(userIdentifier.UserId.ToString());
             }
         }
+
+        public new virtual async Task<User> FindByIdAsync(string userId)
+        {
+            using (_unitOfWorkManager.Current.DisableFilter(AbpDataFilters.MayHaveTenant))
+            {
+                return await base.FindByIdAsync(userId);
+            }
+        }
+
+        public async Task<int?> TryGetTenantIdOfUser(string userEmail)
+        {
+            using (_unitOfWorkManager.Current.DisableFilter(AbpDataFilters.MayHaveTenant))
+            {
+                var user = await Users.SingleOrDefaultAsync(u => u.EmailAddress == userEmail.Trim());
+                return user?.TenantId;
+            }
+        }
+
 
         public User GetUserOrNull(UserIdentifier userIdentifier)
         {

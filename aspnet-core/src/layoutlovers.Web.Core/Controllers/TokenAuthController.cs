@@ -138,7 +138,7 @@ namespace layoutlovers.Web.Controllers
             var loginResult = await GetLoginResultAsync(
                 model.UserNameOrEmailAddress,
                 model.Password,
-                GetTenancyNameOrNull()
+                await  GetTenancyNameOrNullAsync(model.UserNameOrEmailAddress)
             );
 
             var returnUrl = model.ReturnUrl;
@@ -449,8 +449,7 @@ namespace layoutlovers.Web.Controllers
             var externalUser = await GetExternalUserInfo(model);
 
             var loginResult = await _logInManager.LoginAsync(
-                new UserLoginInfo(model.AuthProvider, externalUser.ProviderKey, model.AuthProvider),
-                GetTenancyNameOrNull()
+                new UserLoginInfo(model.AuthProvider, externalUser.ProviderKey, model.AuthProvider)
             );
 
             switch (loginResult.Result)
@@ -495,8 +494,7 @@ namespace layoutlovers.Web.Controllers
 
                     //Try to login again with newly registered user!
                     loginResult = await _logInManager.LoginAsync(
-                        new UserLoginInfo(model.AuthProvider, model.ProviderKey, model.AuthProvider),
-                        GetTenancyNameOrNull()
+                        new UserLoginInfo(model.AuthProvider, model.ProviderKey, model.AuthProvider)
                     );
 
                     if (loginResult.Result != AbpLoginResultType.Success)
@@ -504,7 +502,7 @@ namespace layoutlovers.Web.Controllers
                         throw _abpLoginResultTypeHelper.CreateExceptionForFailedLoginAttempt(
                             loginResult.Result,
                             model.ProviderKey,
-                            GetTenancyNameOrNull()
+                            loginResult?.Tenant?.Name
                         );
                     }
 
@@ -529,7 +527,7 @@ namespace layoutlovers.Web.Controllers
                     throw _abpLoginResultTypeHelper.CreateExceptionForFailedLoginAttempt(
                         loginResult.Result,
                         model.ProviderKey,
-                        GetTenancyNameOrNull()
+                        loginResult?.Tenant?.Name
                     );
                 }
             }
@@ -737,14 +735,16 @@ namespace layoutlovers.Web.Controllers
             return null;
         }
 
-        private string GetTenancyNameOrNull()
+        private async Task<string> GetTenancyNameOrNullAsync(string email)
         {
-            if (!AbpSession.TenantId.HasValue)
+            var tenantId = await _userManager.TryGetTenantIdOfUser(email);
+
+            if (!tenantId.HasValue)
             {
                 return null;
             }
 
-            return _tenantCache.GetOrNull(AbpSession.TenantId.Value)?.TenancyName;
+            return _tenantCache.GetOrNull(tenantId.Value)?.TenancyName;
         }
 
         private async Task<AbpLoginResult<Tenant, User>> GetLoginResultAsync(string usernameOrEmailAddress,

@@ -139,6 +139,11 @@ namespace layoutlovers.MultiTenancy
                     userRole.IsDefault = true;
                     CheckErrors(await _roleManager.UpdateAsync(userRole));
 
+                    //SubscriptionManagerRole role should be default
+                    var subscriptionManagerRole = _roleManager.Roles.Single(r => r.Name == StaticRoleNames.Tenants.SubscriptionManager);
+                    subscriptionManagerRole.IsDefault = true;
+                    CheckErrors(await _roleManager.UpdateAsync(subscriptionManagerRole));
+
                     //Create admin user for the tenant
                     var adminUser = User.CreateTenantAdminUser(tenant.Id, adminEmailAddress);
                     adminUser.ShouldChangePasswordOnNextLogin = shouldChangePasswordOnNextLogin;
@@ -196,6 +201,64 @@ namespace layoutlovers.MultiTenancy
                     await _unitOfWorkManager.Current.SaveChangesAsync();
                     await uow.CompleteAsync();
                 }
+            }
+
+            return newTenantId;
+        }
+
+
+        public async Task<int> CreateWithOutAdminUserAsync(
+            string tenancyName,
+            string name,
+            bool isActive,
+            int? editionId)
+        {
+            int newTenantId;
+
+            using (var uow = _unitOfWorkManager.Begin(TransactionScopeOption.RequiresNew))
+            {
+                //Create tenant
+                var tenant = new Tenant(tenancyName, name)
+                {
+                    IsActive = isActive,
+                    EditionId = editionId
+                };
+
+                await CreateAsync(tenant);
+                await _unitOfWorkManager.Current.SaveChangesAsync(); //To get new tenant's id.
+
+                //Create tenant database
+                _abpZeroDbMigrator.CreateOrMigrateForTenant(tenant);
+
+                //We are working entities of new tenant, so changing tenant filter
+                using (_unitOfWorkManager.Current.SetTenantId(tenant.Id))
+                {
+                    //Create static roles for new tenant
+                    CheckErrors(await _roleManager.CreateStaticRoles(tenant.Id));
+                    await _unitOfWorkManager.Current.SaveChangesAsync(); //To get static role ids
+
+                    //grant all permissions to admin role
+                    var adminRole = _roleManager.Roles.Single(r => r.Name == StaticRoleNames.Tenants.Admin);
+                    await _roleManager.GrantAllPermissionsAsync(adminRole);
+
+                    //User role should be default
+                    var userRole = _roleManager.Roles.Single(r => r.Name == StaticRoleNames.Tenants.User);
+                    userRole.IsDefault = true;
+                    CheckErrors(await _roleManager.UpdateAsync(userRole));
+
+                    //SubscriptionManagerRole role should be default
+                    var subscriptionManagerRole = _roleManager.Roles.Single(r => r.Name == StaticRoleNames.Tenants.SubscriptionManager);
+                    subscriptionManagerRole.IsDefault = true;
+                    CheckErrors(await _roleManager.UpdateAsync(subscriptionManagerRole));
+ 
+                    await _unitOfWorkManager.Current.SaveChangesAsync();
+
+                    await _backgroundJobManager.EnqueueAsync<TenantDemoDataBuilderJob, int>(tenant.Id);
+
+                    newTenantId = tenant.Id;
+                }
+
+                await uow.CompleteAsync();
             }
 
             return newTenantId;

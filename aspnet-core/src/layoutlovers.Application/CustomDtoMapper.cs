@@ -54,6 +54,7 @@ using layoutlovers.Organizations.Dto;
 using layoutlovers.Sessions.Dto;
 using layoutlovers.WebHooks.Dto;
 using Stripe;
+using System.Linq;
 
 namespace layoutlovers
 {
@@ -121,6 +122,7 @@ namespace layoutlovers
 
             configuration.CreateMap<LayoutProduct, LayoutProductDto>()
                 .ForMember(dto => dto.Category, opt => opt.MapFrom(ent => ent.Category))
+                .ForMember(dto => dto.FilterTagDtos, opt => opt.MapFrom(ent => ent.ProductFilterTags.Select(f => f.FilterTag)))
                 .ForMember(dto => dto.AmazonS3Files, opt => opt.MapFrom(ent => ent.AmazonS3Files));
             //Edition
             configuration.CreateMap<EditionEditDto, SubscribableEdition>().ReverseMap();
