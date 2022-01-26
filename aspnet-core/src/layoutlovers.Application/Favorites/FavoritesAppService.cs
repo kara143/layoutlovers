@@ -12,6 +12,7 @@ using System.Linq.Dynamic.Core;
 using Abp.UI;
 using Abp.Authorization;
 using layoutlovers.Favorites.Models;
+using layoutlovers.Amazon;
 
 namespace layoutlovers.Favorites
 {
@@ -24,8 +25,10 @@ namespace layoutlovers.Favorites
             , CreateFavoriteDto
             , UpdateFavoriteDto>, IFavoritesAppService
     {
-        public FavoritesAppService(IRepository<Favorite, Guid> repository) : base(repository)
+        private readonly AmazonS3Configuration _amazonS3Configuration;
+        public FavoritesAppService(IRepository<Favorite, Guid> repository, AmazonS3Configuration amazonS3Configuration) : base(repository)
         {
+            _amazonS3Configuration = amazonS3Configuration;
         }
 
         public async Task<PagedResultDto<FavoriteDto>> GetAllOfCurrentUserAsync(GetFavoritesInput input)
@@ -34,7 +37,7 @@ namespace layoutlovers.Favorites
             {
                 var userId = AbpSession.GetUserId();
 
-                var query = Repository.GetAll()
+                var query = Repository.GetAllIncluding(f => f.LayoutProduct, f => f.LayoutProduct.AmazonS3Files)
                     .Where(f => f.UserId == userId);
 
                 var favoriteCount = query.Count();
@@ -45,6 +48,15 @@ namespace layoutlovers.Favorites
                     .ToListAsync();
 
                 var favoriteListDto = ObjectMapper.Map<List<FavoriteDto>>(favorites);
+                favoriteListDto.Select((favorite, i) =>
+                {
+                    var thumbnail = favorite.Thumbnail;
+                    if (thumbnail != null)
+                    {
+                        thumbnail.PreviewUrl = _amazonS3Configuration.GetPreviewUrl(thumbnail.LayoutProductId, thumbnail.Name);
+                    }
+                    return thumbnail;
+                }).ToList();
 
                 return new PagedResultDto<FavoriteDto>(
                     favoriteCount,
