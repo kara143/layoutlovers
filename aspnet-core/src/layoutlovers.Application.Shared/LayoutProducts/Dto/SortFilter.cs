@@ -15,6 +15,8 @@ namespace layoutlovers.LayoutProducts.Dto
         [Description("Premium")]
         Premium,
         [Description("Popular")]
-        Popular
+        Popular,
+        [Description("Featured order")]
+        FeaturedOrder
     }
 }

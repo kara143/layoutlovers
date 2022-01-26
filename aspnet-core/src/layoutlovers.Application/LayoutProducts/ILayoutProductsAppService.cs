@@ -5,6 +5,7 @@ using layoutlovers.LayoutProducts.Models;
 using layoutlovers.MultiTenancy.Payments.Stripe.Dto;
 using layoutlovers.Purchases.Dto;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace layoutlovers.LayoutProducts
@@ -16,6 +17,7 @@ namespace layoutlovers.LayoutProducts
         LayoutProductDto GetByIdAndIncluding(Guid id);
         Task<PagedResultDto<LayoutProductDto>> GetProducts(GetLayoutProductsInput input);
         Task<LayoutProductDto> Update(UpdateLayoutProductDto input);
+        Task UpdateFeaturedOrder(IList<UpdateFeaturedOrderInput> updateFeaturedOrders);
         Task<PurchaseDto> BuyProduct(BuyProductCard buyProductCard);
         Task<PagedResultDto<LayoutProductDto>> GetShoppingHistoryProducts(GetShoppingHistory input);
     }

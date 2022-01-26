@@ -13,11 +13,14 @@ namespace layoutlovers.LayoutProducts
     [Table("AppLayoutProducts")]
     public class LayoutProduct: FullAuditedEntityWithName<Guid>, ILayoutProduct
     {
+        public bool IsFeatured { get; set; }
+        public int FeaturedOrder { get; set; }
         public decimal Amount { get; set; }
         public string Description { get; set; }
         public Guid CategoryId { get; set; }
         public virtual Category Category { get; set; }
         public LayoutProductType LayoutProductType { get; set; }
+        public AlternativeGridType AlternativeGridType { get; set; }
         public virtual ICollection<AmazonS3File> AmazonS3Files { set; get; }
         public virtual ICollection<Favorite> Favorites { get; set; }
         public virtual ICollection<ShoppingCart> ShoppingCarts { get; set; }
