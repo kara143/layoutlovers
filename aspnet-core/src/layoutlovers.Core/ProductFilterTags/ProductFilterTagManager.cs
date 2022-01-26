@@ -22,6 +22,26 @@ namespace layoutlovers.ProductFilterTags
                 .ToArray();
         }
 
+        public IEnumerable<FilterTag> GetFilterTagByCategoryId(Guid categoryId)
+        {
+            return _repository.GetAllIncluding(f => f.FilterTag, f => f.LayoutProduct)
+                .Where(f => f.LayoutProductId == f.LayoutProduct.Id)
+                .Where(f => f.LayoutProduct.CategoryId == categoryId)
+                .Where(f => !f.IsDeleted)
+                .Select(f => f.FilterTag)
+                .ToArray();
+        }
+        
+        public IEnumerable<FilterTag> GetFilterTagForFeatured()
+        {
+            return _repository.GetAllIncluding(f => f.FilterTag, f => f.LayoutProduct)
+                .Where(f => f.LayoutProductId == f.LayoutProduct.Id)
+                .Where(f => f.LayoutProduct.IsFeatured)
+                .Where(f => !f.IsDeleted)
+                .Select(f => f.FilterTag)
+                .ToArray();
+        }
+
         public async Task CleanFilterTagByProductId(Guid productId)
         {
             var productFilterTags = _repository.GetAllIncluding(f => f.FilterTag)

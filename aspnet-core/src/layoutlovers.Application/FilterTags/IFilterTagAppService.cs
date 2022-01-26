@@ -12,5 +12,7 @@ namespace layoutlovers.FilterTags
             , UpdateFilterTagDto>
     {
         IEnumerable<FilterTagDto> GetAllByProductId(Guid id);
+        IEnumerable<FilterTagDto> GetAllByCategoryId(Guid id);
+        IEnumerable<FilterTagDto> GetAllForFeatured();
     }
 }
