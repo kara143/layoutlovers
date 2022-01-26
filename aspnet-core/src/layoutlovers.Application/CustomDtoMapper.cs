@@ -118,7 +118,7 @@ namespace layoutlovers
             configuration.CreateMap<Favorite, FavoriteDto>()
                 .ForMember(dto => dto.ProductName, opt => opt.MapFrom(ent => ent.LayoutProduct.Name))
                 .ForMember(dto => dto.Thumbnail, opt => opt.MapFrom(ent => ent.LayoutProduct.AmazonS3Files.FirstOrDefault(f => f.IsImage)))
-                .ForMember(dto => dto.FileExtension, opt => opt.MapFrom(ent => ent.LayoutProduct.AmazonS3Files.Where(f => !f.IsImage).Select(f => f.FileExtension)));
+                .ForMember(dto => dto.FileExtensions, opt => opt.MapFrom(ent => ent.LayoutProduct.AmazonS3Files.Where(f => !f.IsImage).Select(f => f.FileExtension)));
             configuration.CreateMap<CreateFavoriteDto, Favorite>();
             configuration.CreateMap<UpdateFavoriteDto, Favorite>();
             

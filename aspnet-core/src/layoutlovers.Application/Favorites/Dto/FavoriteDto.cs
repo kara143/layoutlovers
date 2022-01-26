@@ -11,7 +11,7 @@ namespace layoutlovers.Favorites.Dto
     {
         public string ProductName { get; set; }
         public S3ImageDto Thumbnail { get; set; }
-        public IEnumerable<FileType> FileExtension { get; set; }
+        public IEnumerable<FileType> FileExtensions { get; set; }
 
     }
 }
